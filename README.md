@@ -266,39 +266,117 @@ Quedan **4 partes pendientes**. La base de datos (`database/SGEB.sql`), el módu
 
 **Patrón a seguir:** copiar la estructura de `Incidente` y `Reportante`: Entity → Repository → Service → ViewModel → Controller → View. Registrar los servicios y repositorios propios en `Program.cs` (`AddScoped`) y, al terminar, activar la tarjeta del módulo en el Home.
 
-### 1️⃣ Catálogo de Unidades (CRUD de camiones/ambulancias)
 
-- Entidad `Unidad`, `IUnidadRepository`, `IUnidadService`, `UnidadController`, ViewModels y vistas (listar, registrar, cambiar estado).
-- SPs ya hechos: `sp_Unidad_Registrar`, `_Listar`, `_ListarDisponibles`, `_ObtenerPorId`, `_ActualizarEstado`.
-- Regla de negocio: el `CodigoUnidad` no puede repetirse (hay `UNIQUE`, así que capturen ese error y muestren un mensaje claro).
 
-### 2️⃣ Asignar / liberar unidades a un incidente
+## 1️⃣ Catálogo de Unidades
 
-**Ya está resuelto:** las reglas de negocio viven en `sp_IncidenteUnidad_Asignar`. El SP solo asigna unidades en estado `Disponible` y rechaza incidentes `Cerrado`. No hay que validar eso en el service.
+**Qué van a lograr:** una pantalla donde se vean todas las unidades (camiones, ambulancias, etc.), se pueda registrar una nueva y se pueda cambiar su estado.
 
-**Lo que falta hacer:**
-- Entidad `IncidenteUnidad`, repository, service y controller.
-- Vista donde, desde un incidente, se elige una unidad disponible (`sp_Unidad_ListarDisponibles`) y se asigna. Botón para liberar una asignación.
-- Mostrar las unidades asignadas a un incidente (`sp_IncidenteUnidad_ListarPorIncidente`).
-- Cuando el SP rechaza una asignación, lanza un error de SQL Server con los números `50001` (unidad no disponible) y `50002` (incidente cerrado). Hay que capturarlo en el controller y mostrar su mensaje en el formulario.
-- Depende del punto 1 solo para listar unidades; pueden arrancar en paralelo.
+### Pasos
 
-### 3️⃣ Atención/Cierre + historial por zona
+1. Abran `SGEB.sql` y lean los 5 SPs de Unidad: vean qué parámetros recibe cada uno y qué columnas devuelve.
+2. **Entity:** creen `Unidad.cs` en `SGEB.DAL/Entities` con una propiedad por cada columna de la tabla `Unidad`.
+3. **Repository:** creen `IUnidadRepository` y `UnidadRepository` con 5 métodos, uno por SP: registrar, listar, listar disponibles, obtener por id y actualizar estado. Copien la forma de `IncidenteRepository`.
+4. **Service:** creen `IUnidadService` y `UnidadService`. Aquí va la regla del código repetido (ver abajo).
+5. **ViewModels:** uno para el formulario de registro (con validaciones: código y tipo obligatorios) y otro para la fila del listado.
+6. **Controller:** `UnidadController` con las acciones: listar, registrar (mostrar formulario y guardar) y cambiar estado.
+7. **Vistas:** `Index` (tabla), `Registrar` (formulario) y un formulario o botón para cambiar estado (con lista desplegable: Disponible, En servicio, Mantenimiento, Fuera de servicio).
 
-- Entidad `AtencionCierre`, repo, service, controller y vista: formulario para cerrar un incidente con resultado, observaciones y personal involucrado.
-- Regla: solo se puede cerrar un incidente que tenga al menos una unidad asignada, y una sola vez (hay `UNIQUE` por incidente).
-- Historial por zona: `sp_Incidente_ListarPorZona` con filtro por zona (agregar el método en `IncidenteRepository` / `IncidenteService`, que ya existen y ya mapean todas las columnas que devuelve el SP).
-- SPs ya hechos: `sp_AtencionCierre_Registrar`, `_ObtenerPorIncidente`, `sp_Incidente_ListarPorZona`.
+**La regla del código repetido:** la BD no permite dos unidades con el mismo `CodigoUnidad`. Si intentan registrar una repetida, SQL Server lanza un error de "clave duplicada" (números 2627 o 2601). Hay que capturarlo y mostrar un mensaje como *"Ya existe una unidad con ese código"*, en vez de que se caiga la página.
 
-### 4️⃣ Reportes y exportación
+### Cómo saben que terminaron
 
-**Ya está resuelto:** la exportación completa. El patrón Strategy está implementado en `SGEB.BLL/Exporters` (`IReportExporter` con exportadores PDF, Excel y CSV), los paquetes QuestPDF y ClosedXML están instalados y los tres exportadores están registrados en `Program.cs`. `ReporteController` ya tiene la acción `Exportar`, que descarga el archivo según el parámetro `formato` (`pdf`, `excel` o `csv`). Hoy usa datos de prueba.
+- [ ] Se ve el listado de unidades.
+- [ ] Registran una unidad nueva y aparece en la tabla.
+- [ ] Intentan registrar el mismo código otra vez y sale el mensaje claro.
+- [ ] Cambian el estado de una unidad y se actualiza.
+- [ ] Tarjeta "Unidades" activa en el Home.
 
-**Lo que falta hacer:**
-- Repository y service para `sp_Reportes_EstadisticasPorTipo` y `sp_Reportes_EstadisticasPorZona`.
-- ViewModels y vistas con las estadísticas por tipo y por zona.
-- Botones de descarga (PDF, Excel, CSV) que apunten a `Reporte/Exportar`.
-- Reemplazar los datos de prueba de `Exportar` por los datos reales del service. El exportador recibe un título, los nombres de las columnas y las filas como texto, así que basta con convertir el resultado del service a ese formato. Si quieren exportar los dos reportes (tipo y zona), la acción debe recibir además cuál reporte se pide.
+---
+
+## 2️⃣ Asignar / liberar unidades a un incidente
+
+**Qué van a lograr:** desde un incidente, ver qué unidades tiene asignadas, asignarle una unidad disponible y poder liberarla.
+
+### Pasos
+
+1. Lean en `SGEB.sql` los SPs `sp_IncidenteUnidad_Asignar`, `_Liberar`, `_ListarPorIncidente` y `sp_Unidad_ListarDisponibles`. Anoten parámetros y columnas.
+2. **Entity:** `IncidenteUnidad.cs`. Para mostrar el código y el tipo de la unidad en pantalla, agreguen esas propiedades extra, igual que `Incidente` tiene `NombreReportante` por el JOIN.
+3. **Repository:** `IIncidenteUnidadRepository` y su clase con 3 métodos: asignar, liberar y listar por incidente.
+4. **Service:** deja pasar las llamadas al repository. **No validen nada aquí:** el SP ya rechaza unidades no disponibles e incidentes cerrados.
+5. **Listar unidades disponibles:** la pantalla necesita una lista desplegable con las unidades disponibles (`sp_Unidad_ListarDisponibles`). Eso pertenece al módulo de Unidades (parte 1). Para no esperar a nadie, pueden agregar ese método en su propio repository y avisar a quien tenga la parte 1 para no duplicar trabajo.
+6. **Controller:** acciones para ver las asignaciones de un incidente, asignar y liberar.
+7. **Vista:** una pantalla por incidente con: tabla de unidades asignadas (con botón "Liberar" en cada fila), y un formulario con lista desplegable de unidades disponibles y botón "Asignar".
+8. **Enlace de entrada:** agreguen en la tabla de `Incidente/Index.cshtml` un botón "Unidades" por fila que lleve a su pantalla (es el único cambio que harán en esa vista).
+
+**El manejo de errores (lo más importante):** cuando el SP rechaza algo, SQL Server devuelve un error con número:
+
+- **50001** = la unidad no está disponible
+- **50002** = el incidente ya está cerrado
+
+En el controller, capturen ese error, miren su número y muestren el mensaje en el formulario, como `Incidente` hace con los errores de validación.
+
+### Cómo saben que terminaron
+
+- [ ] Asignan una unidad disponible a un incidente y aparece en la tabla.
+- [ ] Al asignarla, el incidente pasa de Registrado a Asignado.
+- [ ] Liberan la unidad y vuelve a estar disponible.
+- [ ] Intentan asignar una unidad ocupada y sale un mensaje claro (50001).
+- [ ] Intentan asignar a un incidente cerrado y sale un mensaje claro (50002).
+
+---
+
+## 3️⃣ Atención/Cierre + historial por zona
+
+**Qué van a lograr:** un formulario para cerrar un incidente, y una pantalla para ver el historial de incidentes filtrado por zona.
+
+### Pasos para el cierre
+
+1. Lean `sp_AtencionCierre_Registrar` y `_ObtenerPorIncidente` en `SGEB.sql`. Revisen también si el SP ya valida lo de las unidades asignadas.
+2. **Entity:** `AtencionCierre.cs`.
+3. **Repository:** `IAtencionCierreRepository` y su clase con 2 métodos: registrar y obtener por incidente.
+4. **Service:** aquí van las reglas:
+   - Solo se puede cerrar un incidente que tenga **al menos una unidad asignada**. Pueden comprobarlo con `sp_IncidenteUnidad_ListarPorIncidente` (el SP de la parte 2). Si el SP de cierre no lo valida, la validación va aquí.
+   - Solo se cierra **una vez**: la BD tiene un UNIQUE por incidente, así que si intentan cerrar otra vez saltará un error. Captúrenlo y muestren *"Este incidente ya fue cerrado"*.
+5. **ViewModel:** con resultado (lista desplegable: Controlado, Sin novedad, Con pérdidas materiales, Con víctimas, Falsa alarma), observaciones y personal involucrado.
+6. **Controller y vista:** formulario de cierre que se abre desde un incidente. Agreguen un botón "Cerrar" por fila en `Incidente/Index.cshtml`.
+
+### Pasos para el historial por zona
+
+1. Abran `IncidenteRepository` e `IncidenteService` (ya existen) y agreguen un método nuevo que llame a `sp_Incidente_ListarPorZona`, recibiendo la zona. El mapeo de columnas ya está hecho; solo copien el patrón del método `Listar`.
+2. Hagan una vista con un cuadro de texto o lista de zonas, un botón "Buscar" y una tabla con los resultados (pueden reutilizar `IncidenteListItemViewModel`).
+
+### Cómo saben que terminaron
+
+- [ ] Cierran un incidente con unidad asignada y pasa a estado Cerrado.
+- [ ] Intentan cerrar uno sin unidades y sale un mensaje claro.
+- [ ] Intentan cerrar el mismo dos veces y sale un mensaje claro.
+- [ ] Filtran por una zona y solo aparecen los incidentes de esa zona.
+- [ ] Tarjeta "Atención / Cierre" activa en el Home.
+
+---
+
+## 4️⃣ Reportes y exportación
+
+**Qué van a lograr:** mostrar las estadísticas por tipo y por zona en pantalla, y que los botones PDF, Excel y CSV descarguen esos mismos datos. La exportación ya funciona; solo hay que conectarle datos reales.
+
+### Pasos
+
+1. Lean `sp_Reportes_EstadisticasPorTipo` y `sp_Reportes_EstadisticasPorZona` en `SGEB.sql`. Noten qué columnas devuelve cada uno (total, cerrados, sin asignar, minutos promedio, etc.).
+2. **Repository y Service:** creen un repository y un service para estos dos SPs. Cada uno tiene un método. Los resultados pueden ser entidades pequeñas con las columnas que devuelven.
+3. **ViewModels:** uno para las filas del reporte por tipo y otro para por zona.
+4. **Controller:** en `ReporteController` ya existe la acción `Exportar`. Agreguen las acciones para mostrar los dos reportes en pantalla.
+5. **Vistas:** una tabla por reporte, cada una con tres botones de descarga (PDF, Excel, CSV) que apunten a `Reporte/Exportar`.
+6. **Conectar los datos reales:** hoy `Exportar` usa datos de prueba. Hay que reemplazarlos. El exportador recibe tres cosas: un **título**, los **nombres de las columnas** y las **filas como texto**. Entonces, el paso es tomar lo que devuelve el service y convertirlo a esas tres cosas (los números pasan a texto).
+7. **Dos reportes, una acción:** como `Exportar` debe servir para ambos reportes, hay que agregarle un parámetro que diga cuál se pide (por ejemplo "tipo" o "zona"), y que los botones lo envíen.
+
+### Cómo saben que terminaron
+
+- [ ] Se ven las dos tablas de estadísticas con datos reales.
+- [ ] Los tres botones descargan archivo para el reporte por tipo.
+- [ ] Los tres botones descargan archivo para el reporte por zona.
+- [ ] Al abrir los archivos descargados, los datos coinciden con lo que se ve en pantalla.
+- [ ] Tarjeta "Reportes" activa en el Home.
 
 ### Flujo de trabajo con Git
 
