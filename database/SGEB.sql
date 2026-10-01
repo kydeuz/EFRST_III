@@ -458,9 +458,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT i.IdIncidente, i.TipoIncidente, i.Descripcion, i.Direccion, i.Zona,
-           i.Prioridad, i.Estado, i.FechaHoraRegistro,
-           r.Nombre AS NombreReportante
+    SELECT i.IdIncidente, i.IdReportante, i.TipoIncidente, i.Descripcion, i.Direccion, i.Zona,
+           i.Latitud, i.Longitud, i.Prioridad, i.Estado, i.FechaHoraRegistro,
+           r.Nombre AS NombreReportante, r.Telefono AS TelefonoReportante
     FROM dbo.Incidente i
     INNER JOIN dbo.Reportante r ON r.IdReportante = i.IdReportante
     WHERE i.Zona = @Zona
