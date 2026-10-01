@@ -311,32 +311,6 @@ GO
 -- ============================================================
 
 
-CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Asignar
-    @IdIncidente            INT,
-    @IdUnidad               INT,
-    @IdIncidenteUnidadNueva INT OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SET XACT_ABORT ON;
-
-    BEGIN TRANSACTION;
-
-    INSERT INTO dbo.IncidenteUnidad (IdIncidente, IdUnidad, FechaHoraAsignacion, Estado)
-    VALUES (@IdIncidente, @IdUnidad, GETDATE(), 'Asignada');
-
-    SET @IdIncidenteUnidadNueva = SCOPE_IDENTITY();
-
-    UPDATE dbo.Unidad
-    SET Estado = 'En servicio'
-    WHERE IdUnidad = @IdUnidad;
-
-    UPDATE dbo.Incidente
-    SET Estado = 'Asignado'
-    WHERE IdIncidente = @IdIncidente AND Estado = 'Registrado';
-
-    COMMIT TRANSACTION;
-END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Asignar
@@ -369,6 +343,41 @@ BEGIN
     COMMIT TRANSACTION;
 END
 GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Liberar
+    @IdIncidenteUnidad INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRANSACTION;
+
+    DECLARE @IdUnidad INT;
+
+    -- Marca la asignación como Liberada (solo si aún no lo estaba)
+    UPDATE dbo.IncidenteUnidad
+    SET Estado = 'Liberada'
+    WHERE IdIncidenteUnidad = @IdIncidenteUnidad
+      AND Estado <> 'Liberada';
+
+    IF @@ROWCOUNT = 0
+        THROW 50003, 'La asignación no existe o ya fue liberada.', 1;
+
+    SELECT @IdUnidad = IdUnidad
+    FROM dbo.IncidenteUnidad
+    WHERE IdIncidenteUnidad = @IdIncidenteUnidad;
+
+    -- Devuelve la unidad a Disponible (solo si seguía En servicio)
+    UPDATE dbo.Unidad
+    SET Estado = 'Disponible'
+    WHERE IdUnidad = @IdUnidad AND Estado = 'En servicio';
+
+    COMMIT TRANSACTION;
+END
+GO
+
+
 
 CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_ListarPorIncidente
     @IdIncidente INT
