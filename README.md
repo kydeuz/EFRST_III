@@ -285,7 +285,7 @@ Quedan **4 partes pendientes**. La base de datos (`SGEB.sql`), el módulo de Inc
 
 - Pantalla de estadísticas por tipo y por zona (`sp_Reportes_EstadisticasPorTipo` y `_PorZona`).
 - Patrón Strategy: interfaz `IReportExporter` con 3 implementaciones: PDF (QuestPDF), Excel (ClosedXML) y CSV manual, más botones de descarga.
-- Es el más pesado en técnica, pero no depende de nadie.
+
 
 ### Flujo de trabajo con Git
 
