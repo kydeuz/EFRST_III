@@ -231,11 +231,6 @@ Las tarjetas pendientes están en gris (`text-muted`) y llevan un comentario que
 
 ---
 
-## Registro de actividades (Anexo 1A)
-
-| Actividad | Fecha inicio | Fecha fin | Horas | Evidencia |
-|---|---|---|---|---|
-| Creación de solución en 3 capas con dotnet CLI (SGEB.Web, SGEB.BLL, SGEB.DAL) | 20/09/2026 | 20/09/2026 | 3 | Proyectos referenciados correctamente (Web→BLL→DAL), solución compilando sin errores |
 
 ## Cómo ejecutar
 
