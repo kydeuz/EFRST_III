@@ -1,7 +1,14 @@
+using SGEB.BLL.Services;
+using SGEB.DAL.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IReportanteRepository, ReportanteRepository>();
+builder.Services.AddScoped<IReportanteService, ReportanteService>();
+builder.Services.AddScoped<IIncidenteRepository, IncidenteRepository>();
+builder.Services.AddScoped<IIncidenteService, IncidenteService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,44 @@
+@model List<SGEB.Web.Models.IncidenteListItemViewModel>
+
+@{
+    ViewData["Title"] = "Incidentes";
+}
+
+<h1>Incidentes registrados</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<p><a asp-action="Registrar" class="btn btn-primary">+ Nuevo incidente</a></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Tipo</th>
+            <th>Dirección</th>
+            <th>Zona</th>
+            <th>Reportante</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var incidente in Model)
+        {
+            <tr>
+                <td>@incidente.IdIncidente</td>
+                <td>@incidente.TipoIncidente</td>
+                <td>@incidente.Direccion</td>
+                <td>@incidente.Zona</td>
+                <td>@incidente.NombreReportante</td>
+                <td>@incidente.Prioridad</td>
+                <td>@incidente.Estado</td>
+                <td>@incidente.FechaHoraRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

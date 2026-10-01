@@ -1,8 +1,56 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mb-5">
+    <h1 class="display-5">SGEB</h1>
+    <p class="lead">Sistema de Gestión de Emergencias de Bomberos</p>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Incidentes</h5>
+                <p class="card-text">Registrar y consultar incidentes reportados.</p>
+                <a asp-controller="Incidente" asp-action="Index" class="btn btn-primary">Entrar</a>
+            </div>
+        </div>
+    </div>
+
+    <!--cuando tengan el controller de Unidades, cambian el botón por
+         <a asp-controller="Unidad" asp-action="Index" class="btn btn-primary">Entrar</a> -->
+    <div class="col">
+        <div class="card h-100 text-muted">
+            <div class="card-body">
+                <h5 class="card-title">Unidades</h5>
+                <p class="card-text">Catálogo y asignación de unidades a incidentes.</p>
+                <button class="btn btn-secondary" disabled>Próximamente</button>
+            </div>
+        </div>
+    </div>
+
+    <!--mismo cambio cuando exista el controller correspondiente -->
+    <div class="col">
+        <div class="card h-100 text-muted">
+            <div class="card-body">
+                <h5 class="card-title">Atención / Cierre</h5>
+                <p class="card-text">Registro del cierre y resultado de un incidente.</p>
+                <button class="btn btn-secondary" disabled>Próximamente</button>
+            </div>
+        </div>
+    </div>
+
+    <!--mismo cambio cuando exista el controller de Reportes -->
+    <div class="col">
+        <div class="card h-100 text-muted">
+            <div class="card-body">
+                <h5 class="card-title">Reportes</h5>
+                <p class="card-text">Estadísticas y exportación a PDF, Excel y CSV.</p>
+                <button class="btn btn-secondary" disabled>Próximamente</button>
+            </div>
+        </div>
+    </div>
+
 </div>
