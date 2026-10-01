@@ -305,7 +305,7 @@ Quedan **4 partes pendientes**. La base de datos (`database/SGEB.sql`), el módu
 3. **Repository:** `IIncidenteUnidadRepository` y su clase con 3 métodos: asignar, liberar y listar por incidente.
 4. **Service:** deja pasar las llamadas al repository. **No validen nada aquí:** el SP ya rechaza unidades no disponibles e incidentes cerrados.
 5. **Listar unidades disponibles:** la pantalla necesita una lista desplegable con las unidades disponibles (`sp_Unidad_ListarDisponibles`). Eso pertenece al módulo de Unidades (parte 1). Para no esperar a nadie, pueden agregar ese método en su propio repository y avisar a quien tenga la parte 1 para no duplicar trabajo.
-6. **Controller:** acciones para ver las asignaciones de un incidente, asignar y liberar.
+6. **Controller:** `IncidenteUnidadController` con `Index(int idIncidente)` (muestra la pantalla), `Asignar` (POST) y `Liberar` (POST). Después de asignar o liberar, redirigir a `Index` del mismo incidente.
 7. **Vista:** una pantalla por incidente con: tabla de unidades asignadas (con botón "Liberar" en cada fila), y un formulario con lista desplegable de unidades disponibles y botón "Asignar".
 8. **Enlace de entrada:** agreguen en la tabla de `Incidente/Index.cshtml` un botón "Unidades" por fila que lleve a su pantalla (es el único cambio que harán en esa vista).
 
