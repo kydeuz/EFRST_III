@@ -33,29 +33,37 @@ Regla de dependencias: **Web → BLL → DAL**. Ninguna capa salta a la siguient
 
 ```
 SGEB/
-├── SGEB.Web/
-│   ├── Controllers/
-│   │   └── IncidenteController.cs
-│   ├── Models/
-│   │   └── (RegistrarIncidenteViewModel, IncidenteListItemViewModel)
-│   └── Views/
-│       ├── Home/
-│       │   └── Index.cshtml       ← página principal (portal de módulos)
-│       └── Incidente/
-│           ├── Index.cshtml
-│           └── Registrar.cshtml
-├── SGEB.BLL/
-│   └── Services/
-│       ├── IIncidenteService.cs / IncidenteService.cs
-│       └── IReportanteService.cs / ReportanteService.cs
-├── SGEB.DAL/
-│   ├── Entities/
-│   │   ├── Incidente.cs
-│   │   └── Reportante.cs
-│   └── Repositories/
-│       ├── IIncidenteRepository.cs / IncidenteRepository.cs
-│       └── IReportanteRepository.cs / ReportanteRepository.cs
-└── SGEB.sql
+├── database/
+│   └── SGEB.sql
+└── src/
+    ├── SGEB.Web/
+    │   ├── Controllers/
+    │   │   ├── IncidenteController.cs
+    │   │   └── ReporteController.cs      ← acción Exportar (con datos de prueba)
+    │   ├── Models/
+    │   │   └── (RegistrarIncidenteViewModel, IncidenteListItemViewModel)
+    │   └── Views/
+    │       ├── Home/
+    │       │   └── Index.cshtml          ← página principal (portal de módulos)
+    │       └── Incidente/
+    │           ├── Index.cshtml
+    │           └── Registrar.cshtml
+    ├── SGEB.BLL/
+    │   ├── Exporters/                    ← patrón Strategy (PDF, Excel, CSV)
+    │   │   ├── IReportExporter.cs
+    │   │   ├── PdfReportExporter.cs
+    │   │   ├── ExcelReportExporter.cs
+    │   │   └── CsvReportExporter.cs
+    │   └── Services/
+    │       ├── IIncidenteService.cs / IncidenteService.cs
+    │       └── IReportanteService.cs / ReportanteService.cs
+    └── SGEB.DAL/
+        ├── Entities/
+        │   ├── Incidente.cs
+        │   └── Reportante.cs
+        └── Repositories/
+            ├── IIncidenteRepository.cs / IncidenteRepository.cs
+            └── IReportanteRepository.cs / ReportanteRepository.cs
 ```
 
 ## Avance actual
@@ -66,6 +74,8 @@ SGEB/
 | Base de datos (`SGEB.sql`) | ✅ Terminado |
 | Módulo de Incidentes | ✅ Terminado |
 | Página principal (Home) | ✅ Terminado |
+| Exportadores de reportes (Strategy: PDF, Excel, CSV) | ✅ Terminado (QuestPDF y ClosedXML instalados) |
+| Validaciones de asignación de unidades en el SP | ✅ Terminado |
 
 ---
 
@@ -110,7 +120,7 @@ Script único con tablas, índices y stored procedures, ordenado por dependencia
 
 Los SP que tocan más de una tabla usan `BEGIN TRANSACTION` + `SET XACT_ABORT ON`:
 
-- **`sp_IncidenteUnidad_Asignar`**: inserta la asignación, pone la unidad en `En servicio` y pasa el incidente de `Registrado` a `Asignado`.
+- **`sp_IncidenteUnidad_Asignar`**: reserva la unidad (solo si sigue `Disponible`), rechaza incidentes `Cerrado`, inserta la asignación y pasa el incidente de `Registrado` a `Asignado`. Si una regla falla, lanza un error con `THROW` (códigos `50001` unidad no disponible, `50002` incidente cerrado) y revierte todo.
 - **`sp_IncidenteUnidad_Liberar`**: marca la asignación como `Liberada` y devuelve la unidad a `Disponible`.
 - **`sp_AtencionCierre_Registrar`**: inserta el cierre y pasa el incidente a `Cerrado`.
 
@@ -229,8 +239,8 @@ Las tarjetas pendientes están en gris (`text-muted`) y llevan un comentario que
 
 ## Cómo ejecutar
 
-1. Ejecutar `SGEB.sql` en SQL Server (crea tablas y stored procedures; usa `DROP TABLE` previo, así que **recrea las tablas desde cero**).
-2. Configurar la cadena de conexión en `SGEB.Web/appsettings.json`:
+1. Ejecutar `database/SGEB.sql` en SQL Server (crea tablas y stored procedures; usa `DROP TABLE` previo, así que **recrea las tablas desde cero**).
+2. Configurar la cadena de conexión en `src/SGEB.Web/appsettings.json`:
    ```json
    {
      "ConnectionStrings": {
@@ -241,7 +251,7 @@ Las tarjetas pendientes están en gris (`text-muted`) y llevan un comentario que
 3. Desde la raíz de la solución:
    ```bash
    dotnet build
-   dotnet run --project SGEB.Web
+   dotnet run --project src/SGEB.Web
    ```
 4. Abrir `/Incidente` en el navegador.
 
@@ -257,7 +267,7 @@ Las tarjetas pendientes están en gris (`text-muted`) y llevan un comentario que
 
 ## Instrucciones para el equipo
 
-Quedan **4 partes pendientes**. La base de datos (`SGEB.sql`), el módulo de Incidentes y el Home ya están hechos. Cada integrante elige una parte por el grupo de WhatsApp.
+Quedan **4 partes pendientes**. La base de datos (`database/SGEB.sql`), el módulo de Incidentes, el Home y los exportadores de reportes ya están hechos. Cada integrante elige una parte por el grupo de WhatsApp.
 
 **Patrón a seguir:** copiar la estructura de `Incidente` y `Reportante`: Entity → Repository → Service → ViewModel → Controller → View. Registrar los servicios y repositorios propios en `Program.cs` (`AddScoped`) y, al terminar, activar la tarjeta del módulo en el Home.
 
@@ -269,23 +279,31 @@ Quedan **4 partes pendientes**. La base de datos (`SGEB.sql`), el módulo de Inc
 
 ### 2️⃣ Asignar / liberar unidades a un incidente
 
-- Entidad `IncidenteUnidad`, repo, service, controller y vista: desde un incidente, elegir una unidad disponible y asignarla; poder liberarla.
-- SPs ya hechos: `sp_IncidenteUnidad_Asignar`, `_Liberar`, `_ListarPorIncidente`.
-- Reglas en el service: solo unidades en estado `Disponible`, no asignar a incidentes `Cerrado`. El SP no valida esto, así que va en BLL.
-- Depende del punto 1 (`ListarDisponibles`), pero pueden arrancar en paralelo.
+**Ya está resuelto:** las reglas de negocio viven en `sp_IncidenteUnidad_Asignar`. El SP solo asigna unidades en estado `Disponible` y rechaza incidentes `Cerrado`. No hay que validar eso en el service.
+
+**Lo que falta hacer:**
+- Entidad `IncidenteUnidad`, repository, service y controller.
+- Vista donde, desde un incidente, se elige una unidad disponible (`sp_Unidad_ListarDisponibles`) y se asigna. Botón para liberar una asignación.
+- Mostrar las unidades asignadas a un incidente (`sp_IncidenteUnidad_ListarPorIncidente`).
+- Cuando el SP rechaza una asignación, lanza un error de SQL Server con los números `50001` (unidad no disponible) y `50002` (incidente cerrado). Hay que capturarlo en el controller y mostrar su mensaje en el formulario.
+- Depende del punto 1 solo para listar unidades; pueden arrancar en paralelo.
 
 ### 3️⃣ Atención/Cierre + historial por zona
 
 - Entidad `AtencionCierre`, repo, service, controller y vista: formulario para cerrar un incidente con resultado, observaciones y personal involucrado.
 - Regla: solo se puede cerrar un incidente que tenga al menos una unidad asignada, y una sola vez (hay `UNIQUE` por incidente).
-- Historial por zona: `sp_Incidente_ListarPorZona` con filtro por zona (agregar el método en `IncidenteRepository` / `IncidenteService`, que ya existen).
+- Historial por zona: `sp_Incidente_ListarPorZona` con filtro por zona (agregar el método en `IncidenteRepository` / `IncidenteService`, que ya existen y ya mapean todas las columnas que devuelve el SP).
 - SPs ya hechos: `sp_AtencionCierre_Registrar`, `_ObtenerPorIncidente`, `sp_Incidente_ListarPorZona`.
 
 ### 4️⃣ Reportes y exportación
 
-- Pantalla de estadísticas por tipo y por zona (`sp_Reportes_EstadisticasPorTipo` y `_PorZona`).
-- Patrón Strategy: interfaz `IReportExporter` con 3 implementaciones: PDF (QuestPDF), Excel (ClosedXML) y CSV manual, más botones de descarga.
+**Ya está resuelto:** la exportación completa. El patrón Strategy está implementado en `SGEB.BLL/Exporters` (`IReportExporter` con exportadores PDF, Excel y CSV), los paquetes QuestPDF y ClosedXML están instalados y los tres exportadores están registrados en `Program.cs`. `ReporteController` ya tiene la acción `Exportar`, que descarga el archivo según el parámetro `formato` (`pdf`, `excel` o `csv`). Hoy usa datos de prueba.
 
+**Lo que falta hacer:**
+- Repository y service para `sp_Reportes_EstadisticasPorTipo` y `sp_Reportes_EstadisticasPorZona`.
+- ViewModels y vistas con las estadísticas por tipo y por zona.
+- Botones de descarga (PDF, Excel, CSV) que apunten a `Reporte/Exportar`.
+- Reemplazar los datos de prueba de `Exportar` por los datos reales del service. El exportador recibe un título, los nombres de las columnas y las filas como texto, así que basta con convertir el resultado del service a ese formato. Si quieren exportar los dos reportes (tipo y zona), la acción debe recibir además cuál reporte se pide.
 
 ### Flujo de trabajo con Git
 

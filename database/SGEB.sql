@@ -339,25 +339,32 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Liberar
-    @IdIncidenteUnidad INT
+CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Asignar
+    @IdIncidente            INT,
+    @IdUnidad               INT,
+    @IdIncidenteUnidadNueva INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @IdUnidad INT;
-    SELECT @IdUnidad = IdUnidad FROM dbo.IncidenteUnidad WHERE IdIncidenteUnidad = @IdIncidenteUnidad;
-
     BEGIN TRANSACTION;
 
-    UPDATE dbo.IncidenteUnidad
-    SET Estado = 'Liberada'
-    WHERE IdIncidenteUnidad = @IdIncidenteUnidad;
+    -- Reserva atómica: solo pasa si la unidad sigue Disponible
+    UPDATE dbo.Unidad SET Estado = 'En servicio'
+    WHERE IdUnidad = @IdUnidad AND Estado = 'Disponible';
+    IF @@ROWCOUNT = 0 THROW 50001, 'La unidad no está disponible.', 1;
 
-    UPDATE dbo.Unidad
-    SET Estado = 'Disponible'
-    WHERE IdUnidad = @IdUnidad;
+    IF EXISTS (SELECT 1 FROM dbo.Incidente WHERE IdIncidente = @IdIncidente AND Estado = 'Cerrado')
+        THROW 50002, 'El incidente ya está cerrado.', 1;
+
+    INSERT INTO dbo.IncidenteUnidad (IdIncidente, IdUnidad, FechaHoraAsignacion, Estado)
+    VALUES (@IdIncidente, @IdUnidad, GETDATE(), 'Asignada');
+
+    SET @IdIncidenteUnidadNueva = SCOPE_IDENTITY();
+
+    UPDATE dbo.Incidente SET Estado = 'Asignado'
+    WHERE IdIncidente = @IdIncidente AND Estado = 'Registrado';
 
     COMMIT TRANSACTION;
 END

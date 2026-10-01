@@ -1,3 +1,4 @@
+using SGEB.BLL.Exporters;
 using SGEB.BLL.Services;
 using SGEB.DAL.Repositories;
 
@@ -9,6 +10,9 @@ builder.Services.AddScoped<IReportanteRepository, ReportanteRepository>();
 builder.Services.AddScoped<IReportanteService, ReportanteService>();
 builder.Services.AddScoped<IIncidenteRepository, IncidenteRepository>();
 builder.Services.AddScoped<IIncidenteService, IncidenteService>();
+builder.Services.AddScoped<IReportExporter, CsvReportExporter>();
+builder.Services.AddScoped<IReportExporter, ExcelReportExporter>();
+builder.Services.AddScoped<IReportExporter, PdfReportExporter>();
 
 var app = builder.Build();
 
