@@ -121,7 +121,7 @@ Script único con tablas, índices y stored procedures, ordenado por dependencia
 Los SP que tocan más de una tabla usan `BEGIN TRANSACTION` + `SET XACT_ABORT ON`:
 
 - **`sp_IncidenteUnidad_Asignar`**: reserva la unidad (solo si sigue `Disponible`), rechaza incidentes `Cerrado`, inserta la asignación y pasa el incidente de `Registrado` a `Asignado`. Si una regla falla, lanza un error con `THROW` (códigos `50001` unidad no disponible, `50002` incidente cerrado) y revierte todo.
-- **`sp_IncidenteUnidad_Liberar`**: marca la asignación como `Liberada` y devuelve la unidad a `Disponible`.
+- **`sp_IncidenteUnidad_Liberar`**: marca la asignación como `Liberada` y devuelve la unidad a `Disponible` (solo si seguía `En servicio`). Si la asignación no existe o ya estaba liberada, lanza `THROW` con código `50003`.
 - **`sp_AtencionCierre_Registrar`**: inserta el cierre y pasa el incidente a `Cerrado`.
 
 ### Reportes disponibles en BD
@@ -313,6 +313,7 @@ Quedan **4 partes pendientes**. La base de datos (`database/SGEB.sql`), el módu
 
 - **50001** = la unidad no está disponible
 - **50002** = el incidente ya está cerrado
+- **50003** = la asignación no existe o ya fue liberada (solo en Liberar)
 
 En el controller, capturen ese error, miren su número y muestren el mensaje en el formulario, como `Incidente` hace con los errores de validación.
 
@@ -323,6 +324,7 @@ En el controller, capturen ese error, miren su número y muestren el mensaje en 
 - [ ] Liberan la unidad y vuelve a estar disponible.
 - [ ] Intentan asignar una unidad ocupada y sale un mensaje claro (50001).
 - [ ] Intentan asignar a un incidente cerrado y sale un mensaje claro (50002).
+- [ ] Intentan liberar una asignación ya liberada y sale un mensaje claro (50003).
 
 ---
 
