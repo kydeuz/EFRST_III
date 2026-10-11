@@ -1,0 +1,61 @@
+@model List<SGEB.Web.Models.UnidadListItemViewModel>
+
+@{
+    ViewData["Title"] = "Unidades";
+    var estados = (string[])ViewBag.Estados;
+}
+
+<h1>Catálogo de unidades</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<p><a asp-action="Registrar" class="btn btn-primary">+ Nueva unidad</a></p>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Placa</th>
+            <th>Capacidad</th>
+            <th>Estación</th>
+            <th>Estado</th>
+            <th>Registro</th>
+            <th>Cambiar estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var unidad in Model)
+        {
+            <tr>
+                <td>@unidad.CodigoUnidad</td>
+                <td>@unidad.TipoUnidad</td>
+                <td>@unidad.Placa</td>
+                <td>@unidad.Capacidad</td>
+                <td>@unidad.Estacion</td>
+                <td>@unidad.Estado</td>
+                <td>@unidad.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <form asp-action="CambiarEstado" method="post" class="d-flex gap-2">
+                        <input type="hidden" name="idUnidad" value="@unidad.IdUnidad" />
+                        <select name="nuevoEstado" class="form-select form-select-sm">
+                            @foreach (var estado in estados)
+                            {
+                                <option value="@estado" selected="@(estado == unidad.Estado)">@estado</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Cambiar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

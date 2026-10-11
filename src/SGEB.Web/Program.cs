@@ -17,6 +17,8 @@ builder.Services.AddScoped<IReportExporter, ExcelReportExporter>();
 builder.Services.AddScoped<IReportExporter, PdfReportExporter>();
 builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IUnidadRepository, UnidadRepository>();
+builder.Services.AddScoped<IUnidadService, UnidadService>();
 
 
 var app = builder.Build();
