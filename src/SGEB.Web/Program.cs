@@ -13,6 +13,28 @@ builder.Services.AddScoped<IIncidenteService, IncidenteService>();
 builder.Services.AddScoped<IReportExporter, CsvReportExporter>();
 builder.Services.AddScoped<IReportExporter, ExcelReportExporter>();
 builder.Services.AddScoped<IReportExporter, PdfReportExporter>();
+// giancalo agrego esto sgeb.DAL.Repositories
+builder.Services.AddScoped<IIncidenteService, IncidenteService>();
+/////////////
+///giancalo agrego esto SGEB.bLL.Services
+builder.Services.AddScoped<IAtencionCierreService, AtencionCierreService>();
+builder.Services.AddScoped<IAtencionCierreRepository, AtencionCierreRepository>();
+////
+builder.Services.AddScoped
+    <IAtencionCierreRepository, AtencionCierreRepository>();
+builder.Services.AddScoped<IReportanteRepository, ReportanteRepository>();
+builder.Services.AddScoped<IReportanteService, ReportanteService>();
+
+builder.Services.AddScoped<IIncidenteRepository, IncidenteRepository>();
+builder.Services.AddScoped<IIncidenteService, IncidenteService>();
+
+builder.Services.AddScoped
+    <IAtencionCierreRepository, AtencionCierreRepository>();
+
+builder.Services.AddScoped<IReportExporter, CsvReportExporter>();
+builder.Services.AddScoped<IReportExporter, ExcelReportExporter>();
+builder.Services.AddScoped<IReportExporter, PdfReportExporter>();
+/////////////////
 
 var app = builder.Build();
 

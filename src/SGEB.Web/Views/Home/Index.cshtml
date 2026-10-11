@@ -32,12 +32,22 @@
     </div>
 
     <!--mismo cambio cuando exista el controller correspondiente -->
+    <!--ya lo cambie . giancarlo  -->
+    <!-- Módulo de Atención y Cierre -->
     <div class="col">
-        <div class="card h-100 text-muted">
+        <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Atención / Cierre</h5>
-                <p class="card-text">Registro del cierre y resultado de un incidente.</p>
-                <button class="btn btn-secondary" disabled>Próximamente</button>
+
+                <p class="card-text">
+                    Registro de la atención, cierre y resultado de un incidente.
+                </p>
+
+                <a asp-controller="AtencionCierre"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Entrar
+                </a>
             </div>
         </div>
     </div>
