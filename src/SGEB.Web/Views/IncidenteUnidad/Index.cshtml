@@ -1,0 +1,71 @@
+@model AsignarUnidadViewModel
+
+@{
+    ViewData["Title"] = $"Unidades del incidente #{Model.IdIncidente}";
+}
+
+<h1>Unidades del incidente #@Model.IdIncidente</h1>
+<p class="text-muted">@Model.TipoIncidente &middot; @Model.Direccion &middot; Estado: <strong>@Model.EstadoIncidente</strong></p>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<h4 class="mt-4">Unidades asignadas</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Asignada</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Asignadas.Any())
+        {
+            <tr><td colspan="5" class="text-muted">Este incidente aún no tiene unidades asignadas.</td></tr>
+        }
+        @foreach (var a in Model.Asignadas)
+        {
+            <tr>
+                <td>@a.CodigoUnidad</td>
+                <td>@a.TipoUnidad</td>
+                <td>@a.Estado</td>
+                <td>@a.FechaHoraAsignacion.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    @if (a.Estado != "Liberada")
+                    {
+                        <form asp-action="Liberar" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.IdIncidente" />
+                            <input type="hidden" name="idIncidenteUnidad" value="@a.IdIncidenteUnidad" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Liberar</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="mt-4">Asignar una unidad</h4>
+<form asp-action="Asignar" method="post" class="row g-2 align-items-end">
+    <input type="hidden" name="id" value="@Model.IdIncidente" />
+    <div class="col-md-6">
+        <label for="idUnidad" class="form-label">Unidad disponible</label>
+        <select id="idUnidad" name="idUnidad" class="form-select" asp-items="Model.UnidadesDisponibles">
+            <option value="">-- Seleccione --</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Asignar</button>
+    </div>
+</form>
+
+<p class="mt-4"><a asp-controller="Incidente" asp-action="Index">&larr; Volver a incidentes</a></p>
