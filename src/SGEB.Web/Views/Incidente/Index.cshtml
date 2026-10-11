@@ -24,6 +24,7 @@
             <th>Prioridad</th>
             <th>Estado</th>
             <th>Fecha</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -38,6 +39,7 @@
                 <td>@incidente.Prioridad</td>
                 <td>@incidente.Estado</td>
                 <td>@incidente.FechaHoraRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                <td><a asp-controller="IncidenteUnidad" asp-action="Index" asp-route-id="@incidente.IdIncidente" class="btn btn-sm btn-outline-primary">Unidades</a></td>
             </tr>
         }
     </tbody>
