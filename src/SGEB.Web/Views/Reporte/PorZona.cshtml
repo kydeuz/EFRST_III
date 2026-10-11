@@ -1,0 +1,53 @@
+@model List<SGEB.Web.Models.EstadisticaTipoViewModel>
+
+@{
+    ViewData["Title"] = "Reportes - Por tipo";
+}
+
+<h1>Reportes</h1>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link active" asp-action="PorTipo">Por tipo</a></li>
+    <li class="nav-item"><a class="nav-link" asp-action="PorZona">Por zona</a></li>
+</ul>
+
+<partial name="_BotonesExportar" model="@("tipo")" />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Todavía no hay incidentes registrados.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tipo</th><th>Total</th><th>Cerrados</th><th>Sin asignar</th>
+                <th>Min. promedio</th><th>% cierre</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.TipoIncidente</td>
+                    <td>@e.TotalIncidentes</td>
+                    <td>@e.Cerrados</td>
+                    <td>@e.SinAsignar</td>
+                    <td>@(e.MinutosPromedioAtencion?.ToString() ?? "-")</td>
+                    <td>@e.PorcentajeCierre.ToString("0.0")%</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="fw-bold">
+                <td>TOTAL</td>
+                <td>@Model.Sum(x => x.TotalIncidentes)</td>
+                <td>@Model.Sum(x => x.Cerrados)</td>
+                <td>@Model.Sum(x => x.SinAsignar)</td>
+                <td>-</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+}

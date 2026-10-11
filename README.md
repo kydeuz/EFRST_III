@@ -258,6 +258,134 @@ Las tarjetas pendientes están en gris (`text-muted`) y llevan un comentario que
 - Giancarlo Emerson Iquise Huamani
 - Franz
 
+
+## Cambios Giovanne
+
+Parte 4 del proyecto: **Reportes y exportación**. Muestra las estadísticas por tipo y por zona en pantalla y permite descargarlas en PDF, Excel y CSV con datos reales de la base de datos (antes `Exportar` usaba datos de prueba).
+
+### Avance
+
+| Componente | Estado |
+|---|---|
+| Entidades de estadísticas (DAL) | ✅ Terminado |
+| `ReporteRepository` sobre los 2 SP de reportes (DAL) | ✅ Terminado |
+| `ReporteService` (BLL) | ✅ Terminado |
+| ViewModels de reportes (Web) | ✅ Terminado |
+| `ReporteController`: pantallas + `Exportar` con datos reales | ✅ Terminado |
+| Vistas `PorTipo`, `PorZona` y botones de descarga | ✅ Terminado |
+| Registro en `Program.cs` | ✅ Terminado |
+| Tarjeta "Reportes" activa en el Home | ✅ Terminado |
+
+### Archivos nuevos y modificados
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DAL | `Entities/EstadisticaTipo.cs` | Nuevo |
+| DAL | `Entities/EstadisticaZona.cs` | Nuevo |
+| DAL | `Repositories/IReporteRepository.cs` | Nuevo |
+| DAL | `Repositories/ReporteRepository.cs` | Nuevo |
+| BLL | `Services/IReporteService.cs` | Nuevo |
+| BLL | `Services/ReporteService.cs` | Nuevo |
+| Web | `Models/ReporteViewModels.cs` | Nuevo (2 ViewModels) |
+| Web | `Controllers/ReporteController.cs` | Modificado: acciones `Index`, `PorTipo`, `PorZona` y `Exportar` con datos reales |
+| Web | `Views/Reporte/PorTipo.cshtml` | Nuevo |
+| Web | `Views/Reporte/PorZona.cshtml` | Nuevo |
+| Web | `Views/Reporte/_BotonesExportar.cshtml` | Nuevo (partial con los 3 botones) |
+| Web | `Views/Home/Index.cshtml` | Modificado: tarjeta "Reportes" activa |
+| Web | `Program.cs` | Modificado: registro de `IReporteRepository` e `IReporteService` |
+
+### DAL
+
+**Entidades** (POCO puros, una propiedad por columna que devuelve el SP):
+
+| Entidad | Propiedades |
+|---|---|
+| `EstadisticaTipo` | `TipoIncidente`, `TotalIncidentes`, `Cerrados`, `SinAsignar`, `MinutosPromedioAtencion` (`int?`) |
+| `EstadisticaZona` | `Zona`, `TotalIncidentes`, `Cerrados` |
+
+> `MinutosPromedioAtencion` es `int?` porque `sp_Reportes_EstadisticasPorTipo` devuelve `NULL` cuando un tipo de incidente todavía no tiene ningún cierre. El repository lo lee con `IsDBNull`.
+
+**Repository** (`IReporteRepository` / `ReporteRepository`), un método por SP:
+
+| Método | Stored procedure |
+|---|---|
+| `ObtenerEstadisticasPorTipo()` | `sp_Reportes_EstadisticasPorTipo` |
+| `ObtenerEstadisticasPorZona()` | `sp_Reportes_EstadisticasPorZona` |
+
+Sigue el mismo patrón que `IncidenteRepository`: cadena `SGEBConnection` desde `IConfiguration`, `SqlConnection`/`SqlCommand` con `using`, `CommandType.StoredProcedure` y mapeo con `GetOrdinal`.
+
+### BLL
+
+`IReporteService` / `ReporteService` exponen los mismos dos métodos y delegan en el repository. No hay reglas de negocio: los SP ya calculan todo.
+
+### Web
+
+**ViewModels** (`Models/ReporteViewModels.cs`):
+
+| ViewModel | Campos |
+|---|---|
+| `EstadisticaTipoViewModel` | `TipoIncidente`, `TotalIncidentes`, `Cerrados`, `SinAsignar`, `MinutosPromedioAtencion?`, `PorcentajeCierre` (calculado) |
+| `EstadisticaZonaViewModel` | `Zona`, `TotalIncidentes`, `Cerrados`, `PorcentajeCierre` (calculado) |
+
+**ReporteController**
+
+| Ruta | Acción |
+|---|---|
+| `GET /Reporte` | `Index`: redirige a `PorTipo` |
+| `GET /Reporte/PorTipo` | Tabla de estadísticas por tipo de incidente |
+| `GET /Reporte/PorZona` | Tabla de estadísticas por zona |
+| `GET /Reporte/Exportar?reporte=tipo\|zona&formato=pdf\|excel\|csv` | Descarga el reporte pedido en el formato pedido |
+
+Detalles de `Exportar`:
+
+- Recibe un parámetro nuevo, `reporte` (`tipo` o `zona`), para que **una sola acción sirva a los dos reportes**. Si el valor no es válido responde `400`.
+- Sigue buscando el exportador por `formato` (Strategy); si el formato no existe responde `400`.
+- Los datos salen de los mismos métodos privados (`ObtenerPorTipo`, `ObtenerPorZona`) que alimentan las pantallas, así que **lo descargado coincide con lo que se ve**.
+- Convierte lo que devuelve el service a lo que pide el exportador: título, nombres de columnas y filas como texto (los números pasan a `string`; minutos sin dato salen como `-`).
+- Agrega una fila **TOTAL** al final de cada reporte.
+- El archivo se nombra `reporte-{tipo|zona}-{yyyyMMdd-HHmm}.{extensión}`.
+
+Columnas exportadas:
+
+| Reporte | Columnas |
+|---|---|
+| Por tipo | Tipo, Total, Cerrados, Sin asignar, Min. promedio, % cierre |
+| Por zona | Zona, Total, Cerrados, % cierre |
+
+**Vistas**
+
+- `PorTipo.cshtml` y `PorZona.cshtml`: tabla Bootstrap con fila de totales, pestañas para cambiar entre reportes y mensaje "Todavía no hay incidentes registrados" cuando no hay datos.
+- `_BotonesExportar.cshtml`: partial reutilizado por ambas vistas con los botones **PDF**, **Excel** y **CSV**, que apuntan a `Reporte/Exportar` enviando `reporte` y `formato` con `asp-route-*`.
+
+**Home**: en la tarjeta "Reportes" se quitó `text-muted` y el botón deshabilitado se reemplazó por:
+
+```cshtml
+<a asp-controller="Reporte" asp-action="PorTipo" class="btn btn-primary">Entrar</a>
+```
+
+### Program.cs
+
+```csharp
+builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+```
+
+### Cómo probar
+
+1. Tener la BD creada con `database/SGEB.sql` y algunos incidentes (con cierres, para que haya minutos promedio).
+2. `dotnet run --project src/SGEB.Web` y abrir `/Reporte/PorTipo`.
+3. Verificar que se ven las dos tablas (`PorTipo` y `PorZona`) con datos reales.
+4. Descargar PDF, Excel y CSV de cada reporte (6 descargas) y comprobar que los datos coinciden con la pantalla.
+5. Con la BD vacía, comprobar que no se cae y muestra el mensaje de "sin incidentes".
+
+### Criterios de terminado
+
+- [x] Se ven las dos tablas de estadísticas con datos reales.
+- [x] Los tres botones descargan archivo para el reporte por tipo.
+- [x] Los tres botones descargan archivo para el reporte por zona.
+- [x] Los datos de los archivos coinciden con la pantalla.
+- [x] Tarjeta "Reportes" activa en el Home.
+
 ---
 
 ## Instrucciones para el equipo

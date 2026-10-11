@@ -1,0 +1,19 @@
+@model List<SGEB.Web.Models.EstadisticaTipoViewModel>
+
+<canvas id="graficoTipo" height="90"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script>
+        new Chart(document.getElementById('graficoTipo'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.TipoIncidente))),
+                datasets: [
+                    { label: 'Total', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.TotalIncidentes))) },
+                    { label: 'Cerrados', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.Cerrados))) }
+                ]
+            }
+        });
+    </script>
+}

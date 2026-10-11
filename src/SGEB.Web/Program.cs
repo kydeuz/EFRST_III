@@ -13,6 +13,9 @@ builder.Services.AddScoped<IIncidenteService, IncidenteService>();
 builder.Services.AddScoped<IReportExporter, CsvReportExporter>();
 builder.Services.AddScoped<IReportExporter, ExcelReportExporter>();
 builder.Services.AddScoped<IReportExporter, PdfReportExporter>();
+builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+
 
 var app = builder.Build();
 
