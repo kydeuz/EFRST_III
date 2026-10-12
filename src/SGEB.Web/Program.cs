@@ -20,6 +20,12 @@ builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IUnidadRepository, UnidadRepository>();
 builder.Services.AddScoped<IUnidadService, UnidadService>();
 
+builder.Services.AddScoped<IReportanteRepository, ReportanteRepository>();
+builder.Services.AddScoped<IReportanteService, ReportanteService>();
+builder.Services.AddScoped<IIncidenteRepository, IncidenteRepository>();
+builder.Services.AddScoped<IIncidenteService, IncidenteService>();
+builder.Services.AddScoped<IAtencionCierreRepository, AtencionCierreRepository>();
+builder.Services.AddScoped<IAtencionCierreService, AtencionCierreService>();
 
 var app = builder.Build();
 

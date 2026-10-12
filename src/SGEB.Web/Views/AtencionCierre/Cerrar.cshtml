@@ -1,0 +1,153 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@model SGEB.Web.Models.RegistrarCierreViewModel
+
+@{
+    ViewData["Title"] = "Registrar cierre";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Registrar cierre del incidente</h1>
+        <p class="text-muted">
+            Complete la información del resultado de la atención.
+        </p>
+    </div>
+
+    <a asp-controller="AtencionCierre"
+       asp-action="Index"
+       class="btn btn-outline-secondary">
+        Volver
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>Información del incidente</strong>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">
+                <strong>Número:</strong>
+                <p>#@Model.IdIncidente</p>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Tipo:</strong>
+                <p>@Model.TipoIncidente</p>
+            </div>
+
+            <div class="col-md-3">
+                <strong>Zona:</strong>
+                <p>@Model.Zona</p>
+            </div>
+
+            <div class="col-md-4">
+                <strong>Estado:</strong>
+                <p>
+                    <span class="badge bg-info text-dark">
+                        @Model.Estado
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <strong>Dirección:</strong>
+            <p>@Model.Direccion</p>
+        </div>
+    </div>
+</div>
+
+<form asp-controller="AtencionCierre"
+      asp-action="Cerrar"
+      method="post">
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3">
+    </div>
+
+    <input asp-for="IdIncidente" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="ResultadoCierre"
+               class="form-label">
+        </label>
+
+        <select asp-for="ResultadoCierre"
+                class="form-select">
+            <option value="">-- Seleccione un resultado --</option>
+            <option value="Controlado">Controlado</option>
+            <option value="Sin novedad">Sin novedad</option>
+            <option value="Con pérdidas materiales">
+                Con pérdidas materiales
+            </option>
+            <option value="Con víctimas">Con víctimas</option>
+            <option value="Falsa alarma">Falsa alarma</option>
+        </select>
+
+        <span asp-validation-for="ResultadoCierre"
+              class="text-danger">
+        </span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones"
+               class="form-label">
+        </label>
+
+        <textarea asp-for="Observaciones"
+                  class="form-control"
+                  rows="5"
+                  maxlength="500"
+                  placeholder="Describa el resultado y las acciones realizadas"></textarea>
+
+        <span asp-validation-for="Observaciones"
+              class="text-danger">
+        </span>
+
+        <div class="form-text">
+            Máximo 500 caracteres.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PersonalInvolucrado"
+               class="form-label">
+        </label>
+
+        <input asp-for="PersonalInvolucrado"
+               type="number"
+               min="0"
+               max="1000"
+               class="form-control" />
+
+        <span asp-validation-for="PersonalInvolucrado"
+              class="text-danger">
+        </span>
+    </div>
+
+    <button type="submit"
+            class="btn btn-danger"
+            onclick="return confirm('¿Está seguro de cerrar este incidente?');">
+        Cerrar incidente
+    </button>
+
+    <a asp-controller="AtencionCierre"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
