@@ -1,18 +1,29 @@
-
+-- ============================================================
 -- SGEB - Sistema de Gestión de Emergencias de Bomberos
-
-
-
--- Bloque Reportante: tabla + stored procedures
-
--- ============================================================
--- 1. TABLA
+-- Script único: tablas, índices y stored procedures
 -- ============================================================
 
-
-IF OBJECT_ID('dbo.Reportante', 'U') IS NOT NULL
-    DROP TABLE dbo.Reportante;
+IF DB_ID('SGEB') IS NULL
+    CREATE DATABASE SGEB;
 GO
+
+USE SGEB;
+GO
+
+-- ============================================================
+-- 0. LIMPIEZA (orden inverso a las dependencias / FK)
+-- ============================================================
+
+IF OBJECT_ID('dbo.AtencionCierre', 'U')  IS NOT NULL DROP TABLE dbo.AtencionCierre;
+IF OBJECT_ID('dbo.IncidenteUnidad', 'U') IS NOT NULL DROP TABLE dbo.IncidenteUnidad;
+IF OBJECT_ID('dbo.Incidente', 'U')       IS NOT NULL DROP TABLE dbo.Incidente;
+IF OBJECT_ID('dbo.Unidad', 'U')          IS NOT NULL DROP TABLE dbo.Unidad;
+IF OBJECT_ID('dbo.Reportante', 'U')      IS NOT NULL DROP TABLE dbo.Reportante;
+GO
+
+-- ============================================================
+-- 1. BLOQUE REPORTANTE
+-- ============================================================
 
 CREATE TABLE dbo.Reportante (
     IdReportante        INT IDENTITY(1,1)   NOT NULL PRIMARY KEY,
@@ -25,10 +36,6 @@ CREATE TABLE dbo.Reportante (
     CONSTRAINT UQ_Reportante_NumeroDocumento UNIQUE (NumeroDocumento)
 );
 GO
-
--- ============================================================
--- 2. STORED PROCEDURES
--- ============================================================
 
 CREATE OR ALTER PROCEDURE dbo.sp_Reportante_Registrar
     @TipoDocumento      VARCHAR(20),
@@ -86,16 +93,9 @@ BEGIN
 END
 GO
 
--- Bloque Incidente: tabla + stored procedures
-
-
 -- ============================================================
--- 1. TABLA
+-- 2. BLOQUE INCIDENTE
 -- ============================================================
-
-IF OBJECT_ID('dbo.Incidente', 'U') IS NOT NULL
-    DROP TABLE dbo.Incidente;
-GO
 
 CREATE TABLE dbo.Incidente (
     IdIncidente         INT IDENTITY(1,1)   NOT NULL PRIMARY KEY,
@@ -118,10 +118,6 @@ CREATE INDEX IX_Incidente_Estado ON dbo.Incidente(Estado);
 CREATE INDEX IX_Incidente_FechaHoraRegistro ON dbo.Incidente(FechaHoraRegistro DESC);
 CREATE INDEX IX_Incidente_IdReportante ON dbo.Incidente(IdReportante);
 GO
-
--- ============================================================
--- 2. STORED PROCEDURES
--- ============================================================
 
 CREATE OR ALTER PROCEDURE dbo.sp_Incidente_Registrar
     @IdReportante       INT,
@@ -177,18 +173,25 @@ BEGIN
 END
 GO
 
--- SGEB - Sistema de Gestión de Emergencias de Bomberos
--- Bloque Unidad: catálogo de unidades (autobombas, ambulancias, etc.)
--- No depende de Incidente ni Reportante, se puede ejecutar en cualquier orden
--- respecto a esos dos, pero DEBE ir antes de 04_incidente_unidad.sql.
+CREATE OR ALTER PROCEDURE dbo.sp_Incidente_ListarPorZona
+    @Zona VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
 
--- ============================================================
--- 1. TABLA
--- ============================================================
-
-IF OBJECT_ID('dbo.Unidad', 'U') IS NOT NULL
-    DROP TABLE dbo.Unidad;
+    SELECT i.IdIncidente, i.IdReportante, i.TipoIncidente, i.Descripcion, i.Direccion, i.Zona,
+           i.Latitud, i.Longitud, i.Prioridad, i.Estado, i.FechaHoraRegistro,
+           r.Nombre AS NombreReportante, r.Telefono AS TelefonoReportante
+    FROM dbo.Incidente i
+    INNER JOIN dbo.Reportante r ON r.IdReportante = i.IdReportante
+    WHERE i.Zona = @Zona
+    ORDER BY i.FechaHoraRegistro DESC;
+END
 GO
+
+-- ============================================================
+-- 3. BLOQUE UNIDAD
+-- ============================================================
 
 CREATE TABLE dbo.Unidad (
     IdUnidad        INT IDENTITY(1,1)   NOT NULL PRIMARY KEY,
@@ -205,10 +208,6 @@ GO
 
 CREATE INDEX IX_Unidad_Estado ON dbo.Unidad(Estado);
 GO
-
--- ============================================================
--- 2. STORED PROCEDURES
--- ============================================================
 
 CREATE OR ALTER PROCEDURE dbo.sp_Unidad_Registrar
     @CodigoUnidad   VARCHAR(20),
@@ -264,7 +263,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_Unidad_ActualizarEstado
-    @IdUnidad   INT,
+    @IdUnidad    INT,
     @NuevoEstado VARCHAR(20)
 AS
 BEGIN
@@ -276,17 +275,9 @@ BEGIN
 END
 GO
 
-
--- Bloque IncidenteUnidad: asignación de unidades a un incidente (historia "asignar unidad")
-
 -- ============================================================
--- 1. TABLA
+-- 4. BLOQUE INCIDENTEUNIDAD (asignar / liberar)
 -- ============================================================
-
-
-IF OBJECT_ID('dbo.IncidenteUnidad', 'U') IS NOT NULL
-    DROP TABLE dbo.IncidenteUnidad;
-GO
 
 CREATE TABLE dbo.IncidenteUnidad (
     IdIncidenteUnidad   INT IDENTITY(1,1)   NOT NULL PRIMARY KEY,
@@ -306,13 +297,7 @@ CREATE INDEX IX_IncidenteUnidad_IdIncidente ON dbo.IncidenteUnidad(IdIncidente);
 CREATE INDEX IX_IncidenteUnidad_IdUnidad ON dbo.IncidenteUnidad(IdUnidad);
 GO
 
--- ============================================================
--- 2. STORED PROCEDURES
--- ============================================================
-
-
-GO
-
+-- Errores: 50001 unidad no disponible, 50002 incidente cerrado
 CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Asignar
     @IdIncidente            INT,
     @IdUnidad               INT,
@@ -337,13 +322,16 @@ BEGIN
 
     SET @IdIncidenteUnidadNueva = SCOPE_IDENTITY();
 
+    -- Registrado -> Asignado. Atendido -> Asignado: si llega una unidad nueva a un
+    -- incidente ya atendido, vuelve a estar en curso (evita Atendido con unidad en camino).
     UPDATE dbo.Incidente SET Estado = 'Asignado'
-    WHERE IdIncidente = @IdIncidente AND Estado = 'Registrado';
+    WHERE IdIncidente = @IdIncidente AND Estado IN ('Registrado', 'Atendido');
 
     COMMIT TRANSACTION;
 END
 GO
 
+-- Error: 50003 asignación no existe o ya liberada
 CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_Liberar
     @IdIncidenteUnidad INT
 AS
@@ -377,8 +365,6 @@ BEGIN
 END
 GO
 
-
-
 CREATE OR ALTER PROCEDURE dbo.sp_IncidenteUnidad_ListarPorIncidente
     @IdIncidente INT
 AS
@@ -395,18 +381,64 @@ BEGIN
 END
 GO
 
-
--- Bloque AtencionCierre: cierre de un incidente (historia "registrar atención/cierre")
-
-
 -- ============================================================
--- 1. TABLA
+-- 5. MARCAR INCIDENTE COMO ATENDIDO
+-- Errores: 50010 no existe, 50011 cerrado, 50012 sin unidad asignada (Registrado),
+--          50013 ya atendido / estado inválido, 50014 sin unidades activas
 -- ============================================================
 
+CREATE OR ALTER PROCEDURE dbo.sp_Incidente_MarcarAtendido
+    @IdIncidente INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
-IF OBJECT_ID('dbo.AtencionCierre', 'U') IS NOT NULL
-    DROP TABLE dbo.AtencionCierre;
+    BEGIN TRANSACTION;
+
+    DECLARE @Estado VARCHAR(20);
+
+    -- UPDLOCK: evita que otra sesión cambie el estado entre la lectura y el UPDATE
+    SELECT @Estado = Estado
+    FROM dbo.Incidente WITH (UPDLOCK, ROWLOCK)
+    WHERE IdIncidente = @IdIncidente;
+
+    IF @Estado IS NULL
+        THROW 50010, 'El incidente no existe.', 1;
+
+    IF @Estado = 'Cerrado'
+        THROW 50011, 'El incidente ya está cerrado.', 1;
+
+    IF @Estado = 'Registrado'
+        THROW 50012, 'El incidente debe tener una unidad asignada antes de ser atendido.', 1;
+
+    IF @Estado <> 'Asignado'
+        THROW 50013, 'El incidente ya fue atendido o no tiene un estado válido.', 1;
+
+    -- Estado = Asignado, pero puede que todas sus unidades ya se hayan liberado
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.IncidenteUnidad
+        WHERE IdIncidente = @IdIncidente AND Estado <> 'Liberada'
+    )
+        THROW 50014, 'El incidente no tiene unidades activas asignadas.', 1;
+
+    UPDATE dbo.Incidente
+    SET Estado = 'Atendido'
+    WHERE IdIncidente = @IdIncidente;
+
+    UPDATE dbo.IncidenteUnidad
+    SET Estado = 'En sitio',
+        FechaHoraLlegada = COALESCE(FechaHoraLlegada, GETDATE())
+    WHERE IdIncidente = @IdIncidente
+      AND Estado IN ('Asignada', 'En camino');
+
+    COMMIT TRANSACTION;
+END
 GO
+
+-- ============================================================
+-- 6. BLOQUE ATENCIONCIERRE
+-- ============================================================
 
 CREATE TABLE dbo.AtencionCierre (
     IdCierre            INT IDENTITY(1,1)   NOT NULL PRIMARY KEY,
@@ -420,10 +452,6 @@ CREATE TABLE dbo.AtencionCierre (
     CONSTRAINT UQ_AtencionCierre_IdIncidente UNIQUE (IdIncidente)
 );
 GO
-
--- ============================================================
--- 2. STORED PROCEDURES
--- ============================================================
 
 CREATE OR ALTER PROCEDURE dbo.sp_AtencionCierre_Registrar
     @IdIncidente         INT,
@@ -465,24 +493,9 @@ BEGIN
 END
 GO
 
-
--- Bloque Consultas/Reportes: historias "consultar historial por zona" y
-
-CREATE OR ALTER PROCEDURE dbo.sp_Incidente_ListarPorZona
-    @Zona VARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT i.IdIncidente, i.IdReportante, i.TipoIncidente, i.Descripcion, i.Direccion, i.Zona,
-           i.Latitud, i.Longitud, i.Prioridad, i.Estado, i.FechaHoraRegistro,
-           r.Nombre AS NombreReportante, r.Telefono AS TelefonoReportante
-    FROM dbo.Incidente i
-    INNER JOIN dbo.Reportante r ON r.IdReportante = i.IdReportante
-    WHERE i.Zona = @Zona
-    ORDER BY i.FechaHoraRegistro DESC;
-END
-GO
+-- ============================================================
+-- 7. BLOQUE REPORTES
+-- ============================================================
 
 CREATE OR ALTER PROCEDURE dbo.sp_Reportes_EstadisticasPorTipo
 AS
@@ -491,9 +504,9 @@ BEGIN
 
     SELECT
         i.TipoIncidente,
-        COUNT(*)                                                  AS TotalIncidentes,
-        SUM(CASE WHEN i.Estado = 'Cerrado'   THEN 1 ELSE 0 END)   AS Cerrados,
-        SUM(CASE WHEN i.Estado = 'Registrado' THEN 1 ELSE 0 END)  AS SinAsignar,
+        COUNT(*)                                                       AS TotalIncidentes,
+        SUM(CASE WHEN i.Estado = 'Cerrado'    THEN 1 ELSE 0 END)       AS Cerrados,
+        SUM(CASE WHEN i.Estado = 'Registrado' THEN 1 ELSE 0 END)       AS SinAsignar,
         AVG(DATEDIFF(MINUTE, i.FechaHoraRegistro, ac.FechaHoraCierre)) AS MinutosPromedioAtencion
     FROM dbo.Incidente i
     LEFT JOIN dbo.AtencionCierre ac ON ac.IdIncidente = i.IdIncidente
