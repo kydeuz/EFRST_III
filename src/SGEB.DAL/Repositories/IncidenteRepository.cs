@@ -33,8 +33,8 @@ namespace SGEB.DAL.Repositories
             cmd.Parameters.AddWithValue("@Descripcion", incidente.Descripcion);
             cmd.Parameters.AddWithValue("@Direccion", incidente.Direccion);
             cmd.Parameters.AddWithValue("@Zona", incidente.Zona);
-            cmd.Parameters.AddWithValue("@Latitud", (object?)incidente.Latitud ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Longitud", (object?)incidente.Longitud ?? DBNull.Value);
+            cmd.Parameters.Add(ParamDecimal("@Latitud", incidente.Latitud));
+            cmd.Parameters.Add(ParamDecimal("@Longitud", incidente.Longitud));
             cmd.Parameters.AddWithValue("@Prioridad", incidente.Prioridad);
 
             var idOutput = new SqlParameter("@IdIncidenteNuevo", SqlDbType.Int)
@@ -105,5 +105,14 @@ namespace SGEB.DAL.Repositories
                     ? null : reader.GetString(reader.GetOrdinal("TelefonoReportante"))
             };
         }
+
+        private static SqlParameter ParamDecimal(string nombre, decimal? valor) =>
+        new(nombre, SqlDbType.Decimal)
+        {
+            Precision = 9,
+            Scale = 6,
+            Value = valor.HasValue ? Math.Round(valor.Value, 6) : DBNull.Value
+        };
+
     }
 }
