@@ -9,7 +9,7 @@ namespace SGEB.Web.Controllers
     {
         private static readonly string[] Estados =
         {
-            "Disponible", "En servicio", "Mantenimiento", "Fuera de servicio"
+            "Disponible", "Mantenimiento", "Fuera de servicio"
         };
 
         private readonly IUnidadService _unidadService;

@@ -262,16 +262,41 @@ BEGIN
 END
 GO
 
+-- Cambio manual de estado desde el catálogo de unidades.
+-- Errores: 50020 intento de poner 'En servicio' a mano (solo lo hace Asignar),
+--          50021 estado inválido, 50022 la unidad no existe.
+-- Si la unidad tenía asignaciones activas, se liberan en la misma transacción
+-- para que el catálogo y la pantalla del incidente no se contradigan.
 CREATE OR ALTER PROCEDURE dbo.sp_Unidad_ActualizarEstado
     @IdUnidad    INT,
     @NuevoEstado VARCHAR(20)
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
+    IF @NuevoEstado NOT IN ('Disponible', 'En servicio', 'Mantenimiento', 'Fuera de servicio')
+        THROW 50021, 'Estado de unidad inválido.', 1;
+
+    IF @NuevoEstado = 'En servicio'
+        THROW 50020, 'Una unidad solo pasa a En servicio al asignarla a un incidente.', 1;
+
+    BEGIN TRANSACTION;
+
+    -- Primero la fila de Unidad (mismo orden de bloqueo que Asignar y Liberar)
     UPDATE dbo.Unidad
     SET Estado = @NuevoEstado
     WHERE IdUnidad = @IdUnidad;
+
+    IF @@ROWCOUNT = 0
+        THROW 50022, 'La unidad no existe.', 1;
+
+    UPDATE dbo.IncidenteUnidad
+    SET Estado = 'Liberada'
+    WHERE IdUnidad = @IdUnidad
+      AND Estado <> 'Liberada';
+
+    COMMIT TRANSACTION;
 END
 GO
 
@@ -528,4 +553,56 @@ BEGIN
     GROUP BY i.Zona
     ORDER BY TotalIncidentes DESC;
 END
+GO
+
+-- ============================================================
+-- 8. DATOS DE PRUEBA (solo reportantes, incidentes y unidades)
+-- ============================================================
+
+INSERT INTO dbo.Reportante (TipoDocumento, NumeroDocumento, Nombre, Telefono, Correo)
+VALUES
+    ('DNI', '70000001', 'Luis Ramírez Quispe',   '987654321', 'luis.ramirez@example.com'),
+    ('DNI', '70000002', 'María Torres Huamán',   '987654322', NULL),
+    ('DNI', '70000003', 'Carlos Mendoza Rojas',  '987654323', 'carlos.mendoza@example.com'),
+    ('CE',  '001234567', 'Ana Gómez Pérez',      '987654324', NULL),
+    ('DNI', '70000005', 'Jorge Salazar Vega',    NULL,        NULL);
+GO
+
+INSERT INTO dbo.Unidad (CodigoUnidad, TipoUnidad, Placa, Capacidad, Estacion)
+VALUES
+    ('B-01', 'Autobomba',            'BMB-101', 6, 'Compañía Central'),
+    ('B-02', 'Autobomba',            'BMB-102', 6, 'Compañía Norte'),
+    ('A-01', 'Ambulancia',           'AMB-201', 3, 'Compañía Central'),
+    ('A-02', 'Ambulancia',           'AMB-202', 3, 'Compañía Norte'),
+    ('E-01', 'Escalera',             'ESC-301', 4, 'Compañía Central'),
+    ('R-01', 'Rescate',              'RES-401', 5, 'Compañía Norte'),
+    ('M-01', 'Materiales Peligrosos','MAT-501', 5, 'Compañía Central');
+GO
+
+INSERT INTO dbo.Incidente
+    (IdReportante, TipoIncidente, Descripcion, Direccion, Zona, Latitud, Longitud, Prioridad, FechaHoraRegistro)
+VALUES
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '70000001'),
+     'Incendio', 'Fuego en vivienda de dos pisos, se observa humo denso desde la azotea.',
+     'Av. Universitaria 1250', 'Puente Piedra', -11.866700, -77.075000, 'Alta', DATEADD(MINUTE, -180, GETDATE())),
+
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '70000002'),
+     'Accidente de tránsito', 'Choque entre un bus y un automóvil, hay personas atrapadas.',
+     'Panamericana Norte Km 28', 'Puente Piedra', -11.860000, -77.070000, 'Alta', DATEADD(MINUTE, -150, GETDATE())),
+
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '70000003'),
+     'Rescate', 'Persona atrapada en el ascensor de un edificio desde hace una hora.',
+     'Jr. Los Pinos 340', 'Comas', NULL, NULL, 'Media', DATEADD(MINUTE, -120, GETDATE())),
+
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '001234567'),
+     'Materiales peligrosos', 'Fuga de gas en un almacén, fuerte olor a químico en la zona.',
+     'Av. Naranjal 890', 'Los Olivos', -11.990000, -77.070000, 'Alta', DATEADD(MINUTE, -90, GETDATE())),
+
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '70000005'),
+     'Otro', 'Árbol caído sobre la vereda obstruyendo el paso peatonal.',
+     'Calle Las Magnolias 125', 'Independencia', NULL, NULL, 'Baja', DATEADD(MINUTE, -60, GETDATE())),
+
+    ((SELECT IdReportante FROM dbo.Reportante WHERE NumeroDocumento = '70000001'),
+     'Incendio', 'Cortocircuito con llamas en un puesto del mercado.',
+     'Mercado Modelo, Puesto 45', 'Comas', -11.935000, -77.050000, 'Media', DATEADD(MINUTE, -30, GETDATE()));
 GO

@@ -388,11 +388,90 @@ builder.Services.AddScoped<IReporteService, ReporteService>();
 
 ---
 
+
+## Cambios César v1
+
+Integración de la rama `modulo-atencion-cierre` en `main`, estado **Atendido** en el flujo de incidentes y consistencia entre el catálogo de unidades y las asignaciones. Se reescribió `database/SGEB.sql` para que sea ejecutable de principio a fin y traiga datos de prueba.
+
+### Avance
+
+| Componente | Estado |
+|---|---|
+| Fusión de `modulo-atencion-cierre` en `main` | ✅ Terminado |
+| `SGEB.sql`: orden de borrado, creación de BD y datos de prueba | ✅ Terminado |
+| `sp_Incidente_MarcarAtendido` (transaccional) | ✅ Terminado |
+| `sp_Unidad_ActualizarEstado` consistente con las asignaciones | ✅ Terminado |
+| Traducción de errores 50020/50021/50022 en `UnidadService` | ✅ Terminado |
+
+### 1. Fusión de la rama de Atención/Cierre
+
+Se fusionó `origin/modulo-atencion-cierre` en `main`. Hubo un conflicto en `Program.cs`: ambas ramas agregaban registros de inyección de dependencias en el mismo punto.
+
+- **Qué se hizo:** se conservaron los registros de las dos ramas y se eliminaron los duplicados que traía la rama (`IAtencionCierreRepository` x3, `IIncidenteService` x2 y los tres `IReportExporter` repetidos).
+- **Por qué:** los exportadores se registran como `IReportExporter` por formato. Con 6 en lugar de 3 se corría el riesgo de errores de clave duplicada al buscarlos por formato.
+- Se verificó con `dotnet build` (0 errores) antes de subir y se eliminó la rama remota ya fusionada.
+
+### 2. `database/SGEB.sql`
+
+| Cambio | Por qué |
+|---|---|
+| La primera línea era `- SGEB ...` (un guion) | Es un error de sintaxis en SQL Server; ahora es comentario (`--`). |
+| Sección 0 de limpieza con `DROP TABLE` en orden inverso a las FK | Antes cada tabla se borraba justo antes de crearse; en la segunda ejecución `DROP TABLE Reportante` fallaba porque `Incidente` aún la referenciaba. |
+| `CREATE DATABASE SGEB` si no existe + `USE SGEB` | Para que el script no caiga en `master` y pueda correrse sobre un SQL Server vacío. |
+| Sección 8: datos de prueba (7 unidades, 6 incidentes, 5 reportantes) | Poder probar el flujo completo sin cargar datos a mano. Los reportantes son necesarios porque `Incidente.IdReportante` es `NOT NULL`. No se insertan asignaciones ni cierres. |
+
+> El script borra y recrea todas las tablas. Para desplegar un cambio en un SP sobre una BD con datos, ejecutar solo ese bloque (`CREATE OR ALTER`).
+
+### 3. Estado Atendido: `sp_Incidente_MarcarAtendido`
+
+El estado `Atendido` existía en el modelo pero ningún flujo lo usaba. Se descartó pasarlo automáticamente al liberar una unidad: un incidente puede tener varias unidades y liberar es también una forma de corregir una asignación, por lo que "liberar" no equivale a "atendido". Se dejó como una acción explícita.
+
+- Todo ocurre en una **transacción** y el estado se lee con `UPDLOCK`, para que dos usuarios no cambien el mismo incidente a la vez.
+- Pasa de `Asignado` a `Atendido` y las unidades `Asignada`/`En camino` pasan a `En sitio`.
+- Códigos de error: **50010** no existe, **50011** cerrado, **50012** sin unidad asignada, **50013** ya atendido o estado inválido, **50014** sin unidades activas.
+- **50014** es nuevo: un incidente puede seguir en `Asignado` aunque todas sus unidades se hayan liberado; sin esta validación podía quedar `Atendido` sin ninguna unidad.
+- `sp_IncidenteUnidad_Asignar` ahora también pasa `Atendido` a `Asignado`: si llega una unidad nueva a un incidente ya atendido, vuelve a estar en curso.
+
+### 4. Consistencia entre Unidades e Incidente–Unidad
+
+**Problema detectado en las pruebas:** al liberar una unidad desde el catálogo de Unidades, la pantalla del incidente seguía mostrando la asignación como activa. El estado "en servicio" vive en dos tablas (`Unidad.Estado` e `IncidenteUnidad.Estado`) y el catálogo modificaba solo una.
+
+**Solución:** se corrigió en `sp_Unidad_ActualizarEstado`, no con un trigger ni en C#.
+
+- **Por qué no un trigger:** `Asignar` y `Liberar` también escriben en `Unidad`, así que se dispararía desde ellos. Además, el proyecto ya maneja las reglas entre tablas dentro de los SP con transacción.
+- **Por qué no en C#:** serían dos llamadas separadas, no atómicas. Si fallaba la segunda quedaba la misma inconsistencia.
+- El SP actualiza la unidad y libera sus asignaciones activas **en la misma transacción**. Se toma primero el bloqueo de `Unidad`, igual que en `Asignar` y `Liberar`.
+- **50020:** no se puede poner "En servicio" a mano; solo `Asignar` lo hace. Antes se podía crear una unidad ocupada sin incidente y nada la liberaba.
+- **50021:** estado inválido. **50022:** la unidad no existe.
+
+### 5. Capa de aplicación
+
+- `UnidadService.CambiarEstado` captura `SqlException` (50020, 50021, 50022) y la convierte en `ArgumentException` con un mensaje legible. El controller no cambia: ya mostraba `ArgumentException` en `TempData["Error"]`. Así SQL se queda fuera de la capa Web, como indica la regla de dependencias.
+- El dropdown de estados del catálogo ya no incluye "En servicio".
+
+### Cómo probar
+
+1. Ejecutar `database/SGEB.sql` (ver "Cómo ejecutar"). Debe dejar 7 unidades, 6 incidentes y 5 reportantes.
+2. Asignar `A-01` al incidente #1: la unidad pasa a *En servicio* y el incidente a *Asignado*.
+3. En el catálogo, cambiar `A-01` a *Disponible*: la pantalla del incidente muestra la asignación como *Liberada*.
+4. Cambiar una unidad a *Mantenimiento* estando asignada: asignación *Liberada* y unidad en *Mantenimiento*.
+5. Marcar atendido un incidente con unidad activa: pasa a *Atendido* y la unidad a *En sitio*.
+6. Marcar atendido uno sin unidades activas: mensaje claro (50012 o 50014).
+7. Llamar `EXEC dbo.sp_Unidad_ActualizarEstado @IdUnidad = 1, @NuevoEstado = 'En servicio'` directo en SQL: debe devolver el error 50020.
+
+### Pendiente / a tener en cuenta
+
+- Si se libera por el catálogo la única unidad de un incidente, este queda en `Asignado` sin unidades activas. No rompe nada (`MarcarAtendido` lo detecta con 50014), pero no se revierte el estado del incidente de forma automática.
+- `sp_AtencionCierre_Registrar` no libera las unidades al cerrar: quedan `En servicio`. Falta confirmar con quien tiene la parte 3 si es intencional.
+
+
+
 ## Instrucciones para el equipo
 
 Quedan **4 partes pendientes**. La base de datos (`database/SGEB.sql`), el módulo de Incidentes, el Home y los exportadores de reportes ya están hechos. Cada integrante elige una parte por el grupo de WhatsApp.
 
 **Patrón a seguir:** copiar la estructura de `Incidente` y `Reportante`: Entity → Repository → Service → ViewModel → Controller → View. Registrar los servicios y repositorios propios en `Program.cs` (`AddScoped`) y, al terminar, activar la tarjeta del módulo en el Home.
+
 
 
 

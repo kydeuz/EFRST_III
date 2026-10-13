@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using SGEB.DAL.Entities;
 using SGEB.DAL.Repositories;
+using Microsoft.Data.SqlClient;
 
 namespace SGEB.BLL.Services
 {
@@ -52,13 +53,23 @@ namespace SGEB.BLL.Services
 
         public void CambiarEstado(int idUnidad, string nuevoEstado)
         {
-            if (!EstadosValidos.Contains(nuevoEstado))
-                throw new ArgumentException("El estado indicado no es válido.");
+            try
+            {
+                _unidadRepository.ActualizarEstado(idUnidad, nuevoEstado);
+            }
+            catch (SqlException ex) when (ex.Number is 50020 or 50021 or 50022)
+            {
+                string mensaje;
 
-            if (_unidadRepository.ObtenerPorId(idUnidad) == null)
-                throw new ArgumentException("La unidad indicada no existe.");
+                if (ex.Number == 50020)
+                    mensaje = "Una unidad solo pasa a 'En servicio' al asignarla a un incidente.";
+                else if (ex.Number == 50022)
+                    mensaje = "La unidad no existe.";
+                else
+                    mensaje = "Estado de unidad inválido.";
 
-            _unidadRepository.ActualizarEstado(idUnidad, nuevoEstado);
+                throw new ArgumentException(mensaje, ex);
+            }
         }
     }
 }
