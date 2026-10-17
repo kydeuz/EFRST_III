@@ -1,46 +1,94 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Activo(params string[] nombres) =>
+        nombres.Contains(ctrl, StringComparer.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="es">
+
+   <header>
+    <nav class="navbar navbar-dark sgeb-navbar py-3">
+        <div class="container position-relative d-flex flex-column align-items-center">
+            <a class="navbar-brand sgeb-brand m-0 text-center" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-fire"></i> SGEB
+                <small class="d-block sgeb-subtitulo">Sistema de Gestión de Emergencias de Bomberos</small>
+            </a>
+            <a class="nav-link sgeb-inicio @Activo("Home")" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-house-door-fill"></i> Inicio
+            </a>
+            <span class="sgeb-emergencia position-absolute end-0 top-50 translate-middle-y d-none d-md-block">
+                <i class="bi bi-telephone-fill"></i> Emergencias 116
+            </span>
+        </div>
+    </nav>
+    </header>
+</ul>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SGEB.Web</title>
+    <title>@ViewData["Title"] - SGEB</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚒</text></svg>" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SGEB.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SGEB.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-md navbar-dark sgeb-navbar">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-fire"></i> SGEB
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#menuPrincipal" aria-controls="menuPrincipal"
+                        aria-expanded="false" aria-label="Mostrar menú">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="menuPrincipal">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @Activo("Home")" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Inicio
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link @Activo("Incidente", "IncidenteUnidad", "AtencionCierre")"
+                               asp-controller="Incidente" asp-action="Index">
+                                <i class="bi bi-exclamation-triangle"></i> Incidentes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Activo("Unidad")" asp-controller="Unidad" asp-action="Index">
+                                <i class="bi bi-truck"></i> Unidades
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Activo("Reporte")" asp-controller="Reporte" asp-action="PorTipo">
+                                <i class="bi bi-bar-chart-line"></i> Reportes
+                            </a>
                         </li>
                     </ul>
+                    <span class="navbar-text sgeb-emergencia">
+                        <i class="bi bi-telephone-fill"></i> Emergencias 116
+                    </span>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - SGEB.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main role="main" class="container flex-grow-1 py-4">
+        <partial name="_Alertas" />
+        @RenderBody()
+    </main>
+
+    <footer class="sgeb-footer mt-auto py-3">
+        <div class="container d-flex flex-wrap justify-content-between gap-2 small">
+            <span>&copy; 2026 SGEB · Sistema de Gestión de Emergencias de Bomberos</span>
+            <span>Equipo N°04 · Cibertec</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

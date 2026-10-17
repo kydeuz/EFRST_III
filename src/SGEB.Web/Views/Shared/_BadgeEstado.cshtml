@@ -1,0 +1,14 @@
+@model string
+@{
+    var clase = Model switch
+    {
+        "Registrado" or "Liberada"                  => "sgeb-gris",
+        "Asignado" or "Asignada" or "En camino"     => "sgeb-azul",
+        "Atendido" or "En sitio" or "Mantenimiento" => "sgeb-ambar",
+        "Cerrado" or "Disponible"                   => "sgeb-verde",
+        "En servicio"                               => "sgeb-rojo",
+        "Fuera de servicio"                         => "sgeb-carbon",
+        _                                           => "sgeb-gris"
+    };
+}
+<span class="badge sgeb-badge @clase">@Model</span>

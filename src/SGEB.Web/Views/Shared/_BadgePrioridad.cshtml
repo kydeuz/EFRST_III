@@ -1,0 +1,2 @@
+@model string
+<span class="badge sgeb-badge @(Model switch { "Alta" => "sgeb-rojo", "Media" => "sgeb-ambar", "Baja" => "sgeb-verde", _ => "sgeb-gris" })">@Model</span>
