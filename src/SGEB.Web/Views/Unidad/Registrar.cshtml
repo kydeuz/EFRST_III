@@ -4,52 +4,79 @@
     ViewData["Title"] = "Registrar unidad";
 }
 
-<h1>Registrar unidad</h1>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
 
-<form asp-action="Registrar" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <a asp-action="Index" class="text-decoration-none d-inline-block mb-3">
+            <i class="bi bi-arrow-left"></i> Volver al catálogo
+        </a>
 
-    <div class="mb-3">
-        <label asp-for="CodigoUnidad" class="form-label"></label>
-        <input asp-for="CodigoUnidad" class="form-control" placeholder="Ej. B-05" />
-        <span asp-validation-for="CodigoUnidad" class="text-danger"></span>
-    </div>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h1 class="h5 mb-0"><i class="bi bi-truck"></i> Registrar unidad</h1>
+            </div>
+            <div class="card-body p-4">
 
-    <div class="mb-3">
-        <label asp-for="TipoUnidad" class="form-label"></label>
-        <select asp-for="TipoUnidad" class="form-select">
-            <option value="">-- Seleccione --</option>
-            <option value="Autobomba">Autobomba</option>
-            <option value="Ambulancia">Ambulancia</option>
-            <option value="Escalera">Escalera</option>
-            <option value="Rescate">Rescate</option>
-            <option value="Materiales Peligrosos">Materiales Peligrosos</option>
-        </select>
-        <span asp-validation-for="TipoUnidad" class="text-danger"></span>
-    </div>
+                <form asp-action="Registrar" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="row mb-3">
-        <div class="col">
-            <label asp-for="Placa" class="form-label"></label>
-            <input asp-for="Placa" class="form-control" />
-            <span asp-validation-for="Placa" class="text-danger"></span>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="CodigoUnidad" class="form-label fw-semibold"></label>
+                            <input asp-for="CodigoUnidad" class="form-control" placeholder="Ej. B-05" />
+                            <span asp-validation-for="CodigoUnidad" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TipoUnidad" class="form-label fw-semibold"></label>
+                            <select asp-for="TipoUnidad" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Autobomba">Autobomba</option>
+                                <option value="Ambulancia">Ambulancia</option>
+                                <option value="Escalera">Escalera</option>
+                                <option value="Rescate">Rescate</option>
+                                <option value="Materiales Peligrosos">Materiales Peligrosos</option>
+                            </select>
+                            <span asp-validation-for="TipoUnidad" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Placa" class="form-label fw-semibold"></label>
+                            <input asp-for="Placa" class="form-control" placeholder="Ej. ABC-123" />
+                            <span asp-validation-for="Placa" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Capacidad" class="form-label fw-semibold"></label>
+                            <input asp-for="Capacidad" class="form-control" placeholder="Ej. 6" />
+                            <span asp-validation-for="Capacidad" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Estacion" class="form-label fw-semibold"></label>
+                            <input asp-for="Estacion" class="form-control" placeholder="Ej. Estación Central" />
+                            <span asp-validation-for="Estacion" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-info-circle"></i> Toda unidad nueva se registra como <strong>Disponible</strong>.
+                    </p>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Registrar unidad
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+
+            </div>
         </div>
-        <div class="col">
-            <label asp-for="Capacidad" class="form-label"></label>
-            <input asp-for="Capacidad" class="form-control" />
-            <span asp-validation-for="Capacidad" class="text-danger"></span>
-        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Estacion" class="form-label"></label>
-        <input asp-for="Estacion" class="form-control" />
-        <span asp-validation-for="Estacion" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Registrar unidad</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
