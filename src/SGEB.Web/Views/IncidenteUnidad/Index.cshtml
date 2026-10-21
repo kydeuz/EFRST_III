@@ -1,71 +1,177 @@
+```cshtml
 @model AsignarUnidadViewModel
 
 @{
     ViewData["Title"] = $"Unidades del incidente #{Model.IdIncidente}";
+
+    var totalAsignadas = Model.Asignadas.Count();
+    var totalActivas = Model.Asignadas.Count(a => a.Estado != "Liberada");
+    var totalLiberadas = Model.Asignadas.Count(a => a.Estado == "Liberada");
 }
 
-<h1>Unidades del incidente #@Model.IdIncidente</h1>
-<p class="text-muted">@Model.TipoIncidente &middot; @Model.Direccion &middot; Estado: <strong>@Model.EstadoIncidente</strong></p>
+<style>
+    .incidente-page {
+        --inc-primary: #2563eb;
+        --inc-primary-dark: #1d4ed8;
+        --inc-text: #172033;
+        --inc-muted: #64748b;
+        --inc-border: #e2e8f0;
+        color: var(--inc-text);
+        padding-bottom: 2rem;
+    }
 
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    .incidente-page .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        flex-wrap: wrap;
+    }
 
-<h4 class="mt-4">Unidades asignadas</h4>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Asignada</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Asignadas.Any())
-        {
-            <tr><td colspan="5" class="text-muted">Este incidente aún no tiene unidades asignadas.</td></tr>
-        }
-        @foreach (var a in Model.Asignadas)
-        {
-            <tr>
-                <td>@a.CodigoUnidad</td>
-                <td>@a.TipoUnidad</td>
-                <td>@a.Estado</td>
-                <td>@a.FechaHoraAsignacion.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    @if (a.Estado != "Liberada")
-                    {
-                        <form asp-action="Liberar" method="post" class="d-inline">
-                            <input type="hidden" name="id" value="@Model.IdIncidente" />
-                            <input type="hidden" name="idIncidenteUnidad" value="@a.IdIncidenteUnidad" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Liberar</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    .incidente-page .page-eyebrow {
+        color: var(--inc-primary);
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: .45rem;
+    }
 
-<h4 class="mt-4">Asignar una unidad</h4>
-<form asp-action="Asignar" method="post" class="row g-2 align-items-end">
-    <input type="hidden" name="id" value="@Model.IdIncidente" />
-    <div class="col-md-6">
-        <label for="idUnidad" class="form-label">Unidad disponible</label>
-        <select id="idUnidad" name="idUnidad" class="form-select" asp-items="Model.UnidadesDisponibles">
-            <option value="">-- Seleccione --</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Asignar</button>
-    </div>
-</form>
+    .incidente-page .page-title {
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 750;
+        letter-spacing: -.04em;
+        margin: 0;
+    }
 
-<p class="mt-4"><a asp-controller="Incidente" asp-action="Index">&larr; Volver a incidentes</a></p>
+    .incidente-page .page-subtitle {
+        color: var(--inc-muted);
+        margin: .6rem 0 0;
+        font-size: .95rem;
+    }
+
+    .incidente-page .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .65rem 1rem;
+        border: 1px solid var(--inc-border);
+        border-radius: 10px;
+        background: white;
+        color: #334155;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .2s, border-color .2s;
+    }
+
+    .incidente-page .btn-back:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
+    .incidente-page .incident-banner {
+        background: linear-gradient(120deg, #172554, #1e40af);
+        color: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 24px rgba(30, 64, 175, .12);
+    }
+
+    .incidente-page .banner-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .incidente-page .banner-label {
+        color: #bfdbfe;
+        font-size: .8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .incidente-page .banner-id {
+        font-size: 1.65rem;
+        font-weight: 750;
+        margin: .25rem 0 .85rem;
+    }
+
+    .incidente-page .banner-details {
+        display: flex;
+        gap: .75rem 1.5rem;
+        flex-wrap: wrap;
+        color: #dbeafe;
+        font-size: .9rem;
+    }
+
+    .incidente-page .banner-details strong {
+        color: white;
+    }
+
+    .incidente-page .incident-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .5rem .8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .14);
+        border: 1px solid rgba(255, 255, 255, .2);
+        color: white;
+        font-size: .82rem;
+        font-weight: 650;
+    }
+
+    .incidente-page .status-dot {
+        width: 7px;
+        height: 7px;
+        background: #86efac;
+        border-radius: 50%;
+    }
+
+    .incidente-page .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .incidente-page .summary-card {
+        background: white;
+        border: 1px solid var(--inc-border);
+        border-radius: 14px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, .025);
+    }
+
+    .incidente-page .summary-label {
+        color: var(--inc-muted);
+        font-size: .85rem;
+        font-weight: 600;
+        margin-bottom: .6rem;
+    }
+
+    .incidente-page .summary-number {
+        font-size: 1.9rem;
+        line-height: 1.2;
+        font-weight: 750;
+        letter-spacing: -.04em;
+    }
+
+    .incidente-page .summary-note {
+        color: var(--inc-muted);
+        font-size: .78rem;
+        margin-top: .4rem;
+    }
+
+    .incidente-page .section-card {
+        background: white;
+        border: 1px solid var(--inc-border);
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 
