@@ -4,101 +4,116 @@
     ViewData["Title"] = "Registrar incidente";
 }
 
-<h1>Registrar incidente</h1>
+<div class="page-header">
+    <h1><i class="bi bi-plus-circle"></i> Registrar incidente</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+</div>
 
 <form asp-action="Registrar" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="TipoIncidente" class="form-label"></label>
-        <select asp-for="TipoIncidente" class="form-select">
-            <option value="">-- Seleccione --</option>
-            <option value="Incendio">Incendio</option>
-            <option value="Rescate">Rescate</option>
-            <option value="Accidente de tránsito">Accidente de tránsito</option>
-            <option value="Materiales peligrosos">Materiales peligrosos</option>
-            <option value="Otro">Otro</option>
-        </select>
-        <span asp-validation-for="TipoIncidente" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Descripcion" class="form-label"></label>
-        <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
-        <span asp-validation-for="Descripcion" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Direccion" class="form-label"></label>
-        <input asp-for="Direccion" class="form-control" />
-        <span asp-validation-for="Direccion" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Zona" class="form-label"></label>
-        <input asp-for="Zona" class="form-control" />
-        <span asp-validation-for="Zona" class="text-danger"></span>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col">
-            <label asp-for="Latitud" class="form-label"></label>
-            <input asp-for="Latitud" class="form-control" />
+    <div class="card mb-4">
+        <div class="card-header bg-white fw-semibold">
+            <i class="bi bi-fire text-danger"></i> Datos del incidente
         </div>
-        <div class="col">
-            <label asp-for="Longitud" class="form-label"></label>
-            <input asp-for="Longitud" class="form-control" />
-        </div>
-    </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="TipoIncidente" class="form-label"></label>
+                    <select asp-for="TipoIncidente" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        <option value="Incendio">Incendio</option>
+                        <option value="Rescate">Rescate</option>
+                        <option value="Accidente de tránsito">Accidente de tránsito</option>
+                        <option value="Materiales peligrosos">Materiales peligrosos</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <span asp-validation-for="TipoIncidente" class="text-danger"></span>
+                </div>
 
-    <div class="mb-3">
-        <label asp-for="Prioridad" class="form-label"></label>
-        <select asp-for="Prioridad" class="form-select">
-            <option value="Alta">Alta</option>
-            <option value="Media" selected>Media</option>
-            <option value="Baja">Baja</option>
-        </select>
-    </div>
+                <div class="col-md-6">
+                    <label asp-for="Prioridad" class="form-label"></label>
+                    <select asp-for="Prioridad" class="form-select">
+                        <option value="Alta">Alta</option>
+                        <option value="Media" selected>Media</option>
+                        <option value="Baja">Baja</option>
+                    </select>
+                </div>
 
-    <hr />
-    <h5>Datos del reportante</h5>
+                <div class="col-12">
+                    <label asp-for="Descripcion" class="form-label"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
 
-    <div class="row mb-3">
-        <div class="col-4">
-            <label asp-for="TipoDocumento" class="form-label"></label>
-            <select asp-for="TipoDocumento" class="form-select">
-                <option value="DNI">DNI</option>
-                <option value="CE">Carné de extranjería</option>
-                <option value="Pasaporte">Pasaporte</option>
-            </select>
-        </div>
-        <div class="col-8">
-            <label asp-for="NumeroDocumento" class="form-label"></label>
-            <input asp-for="NumeroDocumento" class="form-control" />
-            <span asp-validation-for="NumeroDocumento" class="text-danger"></span>
+                <div class="col-md-8">
+                    <label asp-for="Direccion" class="form-label"></label>
+                    <input asp-for="Direccion" class="form-control" />
+                    <span asp-validation-for="Direccion" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="Zona" class="form-label"></label>
+                    <input asp-for="Zona" class="form-control" />
+                    <span asp-validation-for="Zona" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Latitud" class="form-label"></label>
+                    <input asp-for="Latitud" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Longitud" class="form-label"></label>
+                    <input asp-for="Longitud" class="form-control" />
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="NombreReportante" class="form-label"></label>
-        <input asp-for="NombreReportante" class="form-control" />
-        <span asp-validation-for="NombreReportante" class="text-danger"></span>
+    <div class="card mb-4">
+        <div class="card-header bg-white fw-semibold">
+            <i class="bi bi-person-lines-fill text-danger"></i> Datos del reportante
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="TipoDocumento" class="form-label"></label>
+                    <select asp-for="TipoDocumento" class="form-select">
+                        <option value="DNI">DNI</option>
+                        <option value="CE">Carné de extranjería</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="NumeroDocumento" class="form-label"></label>
+                    <input asp-for="NumeroDocumento" class="form-control" />
+                    <span asp-validation-for="NumeroDocumento" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="NombreReportante" class="form-label"></label>
+                    <input asp-for="NombreReportante" class="form-control" />
+                    <span asp-validation-for="NombreReportante" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="TelefonoReportante" class="form-label"></label>
+                    <input asp-for="TelefonoReportante" class="form-control" />
+                    <span asp-validation-for="TelefonoReportante" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CorreoReportante" class="form-label"></label>
+                    <input asp-for="CorreoReportante" class="form-control" />
+                    <span asp-validation-for="CorreoReportante" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="row mb-3">
-        <div class="col">
-            <label asp-for="TelefonoReportante" class="form-label"></label>
-            <input asp-for="TelefonoReportante" class="form-control" />
-            <span asp-validation-for="TelefonoReportante" class="text-danger"></span>
-        </div>
-        <div class="col">
-            <label asp-for="CorreoReportante" class="form-label"></label>
-            <input asp-for="CorreoReportante" class="form-control" />
-            <span asp-validation-for="CorreoReportante" class="text-danger"></span>
-        </div>
+    <div class="d-flex justify-content-end gap-2 mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Registrar incidente</button>
     </div>
-
-    <button type="submit" class="btn btn-primary">Registrar incidente</button>
 </form>
 
 @section Scripts {
