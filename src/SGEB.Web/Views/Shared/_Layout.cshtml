@@ -5,24 +5,6 @@
 }
 <!DOCTYPE html>
 <html lang="es">
-
-   <header>
-    <nav class="navbar navbar-dark sgeb-navbar py-3">
-        <div class="container position-relative d-flex flex-column align-items-center">
-            <a class="navbar-brand sgeb-brand m-0 text-center" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-fire"></i> SGEB
-                <small class="d-block sgeb-subtitulo">Sistema de Gestión de Emergencias de Bomberos</small>
-            </a>
-            <a class="nav-link sgeb-inicio @Activo("Home")" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-house-door-fill"></i> Inicio
-            </a>
-            <span class="sgeb-emergencia position-absolute end-0 top-50 translate-middle-y d-none d-md-block">
-                <i class="bi bi-telephone-fill"></i> Emergencias 116
-            </span>
-        </div>
-    </nav>
-    </header>
-</ul>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -53,9 +35,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @Activo("Incidente", "IncidenteUnidad", "AtencionCierre")"
+                            <a class="nav-link @Activo("Incidente", "IncidenteUnidad")"
                                asp-controller="Incidente" asp-action="Index">
                                 <i class="bi bi-exclamation-triangle"></i> Incidentes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Activo("AtencionCierre")"
+                               asp-controller="AtencionCierre" asp-action="Index">
+                                <i class="bi bi-shield-check"></i> Atención y cierre
                             </a>
                         </li>
                         <li class="nav-item">
