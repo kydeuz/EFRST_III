@@ -10,144 +10,473 @@
     ViewData["Title"] = "Registrar cierre";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>Registrar cierre del incidente</h1>
-        <p class="text-muted">
-            Complete la información del resultado de la atención.
-        </p>
+<div class="container-fluid py-4">
+
+    @* Encabezado principal *@
+    <div class="card bg-dark text-white border-0 shadow mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="row align-items-center gy-3">
+
+                <div class="col-lg-8">
+
+                    <div class="d-flex align-items-center">
+
+                        @* Ícono profesional *@
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 58px; height: 58px; min-width: 58px;">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="30"
+                                 height="30"
+                                 fill="currentColor"
+                                 viewBox="0 0 16 16"
+                                 aria-hidden="true">
+
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM6.97 11.03a.75.75 0 0 0 1.06 0l4-4a.75.75 0 0 0-1.06-1.06L7.5 9.44 5.53 7.47a.75.75 0 0 0-1.06 1.06l2.5 2.5Z" />
+
+                            </svg>
+
+                        </div>
+
+                        <div>
+
+                            <h1 class="h3 fw-bold mb-1">
+                                Registrar cierre del incidente
+                            </h1>
+
+                            <p class="text-white-50 mb-0">
+                                Complete la información del resultado de la atención.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+
+                    <a asp-controller="AtencionCierre"
+                       asp-action="Index"
+                       class="btn btn-warning fw-semibold px-4 py-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="16"
+                             height="16"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             class="me-1"
+                             aria-hidden="true">
+
+                            <path fill-rule="evenodd"
+                                  d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5A.5.5 0 0 1 15 8Z" />
+
+                        </svg>
+
+                        Volver
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <a asp-controller="AtencionCierre"
-       asp-action="Index"
-       class="btn btn-outline-secondary">
-        Volver
-    </a>
-</div>
+    @* Información del incidente *@
+    <div class="card border-0 shadow mb-4">
 
-<div class="card mb-4">
-    <div class="card-header">
-        <strong>Información del incidente</strong>
+        <div class="card-header bg-dark text-white py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h2 class="h5 fw-bold mb-1">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="19"
+                             height="19"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             class="me-2"
+                             aria-hidden="true">
+
+                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2Zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901Z" />
+
+                        </svg>
+
+                        Información del incidente
+
+                    </h2>
+
+                    <small class="text-white-50">
+                        Verifique los datos antes de registrar el cierre.
+                    </small>
+
+                </div>
+
+                <span class="badge bg-warning text-dark px-3 py-2">
+                    Incidente #@Model.IdIncidente
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="card-body p-0">
+
+            @* La tabla-bordered agrega líneas tipo Excel *@
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle mb-0">
+
+                    <tbody>
+
+                        <tr>
+
+                            <th class="table-light px-3 py-3">
+                                Número
+                            </th>
+
+                            <td class="px-3 py-3 fw-bold">
+                                #@Model.IdIncidente
+                            </td>
+
+                            <th class="table-light px-3 py-3">
+                                Tipo
+                            </th>
+
+                            <td class="px-3 py-3">
+                                @Model.TipoIncidente
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th class="table-light px-3 py-3">
+                                Zona
+                            </th>
+
+                            <td class="px-3 py-3">
+                                @Model.Zona
+                            </td>
+
+                            <th class="table-light px-3 py-3">
+                                Estado
+                            </th>
+
+                            <td class="px-3 py-3">
+
+                                <span class="badge rounded-pill bg-info text-dark px-3 py-2">
+                                    @Model.Estado
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th class="table-light px-3 py-3">
+                                Dirección
+                            </th>
+
+                            <td colspan="3" class="px-3 py-3">
+                                @Model.Direccion
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-2">
-                <strong>Número:</strong>
-                <p>#@Model.IdIncidente</p>
-            </div>
+    @* Formulario de cierre *@
+    <form asp-controller="AtencionCierre"
+          asp-action="Cerrar"
+          method="post">
 
-            <div class="col-md-3">
-                <strong>Tipo:</strong>
-                <p>@Model.TipoIncidente</p>
-            </div>
+        @Html.AntiForgeryToken()
 
-            <div class="col-md-3">
-                <strong>Zona:</strong>
-                <p>@Model.Zona</p>
-            </div>
+        <input asp-for="IdIncidente" type="hidden" />
 
-            <div class="col-md-4">
-                <strong>Estado:</strong>
-                <p>
-                    <span class="badge bg-info text-dark">
-                        @Model.Estado
+        <div class="card border-0 shadow">
+
+            <div class="card-header bg-dark text-white py-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <h2 class="h5 fw-bold mb-1">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="19"
+                                 height="19"
+                                 fill="currentColor"
+                                 viewBox="0 0 16 16"
+                                 class="me-2"
+                                 aria-hidden="true">
+
+                                <path d="M14.5 1.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-13A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .5-.5h13Zm-13-1A1.5 1.5 0 0 0 0 2v12a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 14V2A1.5 1.5 0 0 0 14.5.5h-13Z" />
+
+                                <path d="M5.5 10.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5Zm0-2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5Zm0-2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5Z" />
+
+                            </svg>
+
+                            Datos del cierre
+
+                        </h2>
+
+                        <small class="text-white-50">
+                            Registre el resultado y las acciones realizadas.
+                        </small>
+
+                    </div>
+
+                    <span class="badge bg-warning text-dark px-3 py-2">
+                        Campos obligatorios
                     </span>
-                </p>
+
+                </div>
+
             </div>
+
+            <div class="card-body p-4">
+
+                @* Resumen de errores de validación *@
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"
+                     role="alert">
+                </div>
+
+                <div class="row g-4">
+
+                    @* Resultado del cierre *@
+                    <div class="col-12">
+
+                        <label asp-for="ResultadoCierre"
+                               class="form-label fw-bold">
+
+                            Resultado del cierre
+
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text bg-dark text-warning">
+
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     width="18"
+                                     height="18"
+                                     fill="currentColor"
+                                     viewBox="0 0 16 16"
+                                     aria-hidden="true">
+
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM6.97 11.03a.75.75 0 0 0 1.06 0l4-4a.75.75 0 0 0-1.06-1.06L7.5 9.44 5.53 7.47a.75.75 0 0 0-1.06 1.06l2.5 2.5Z" />
+
+                                </svg>
+
+                            </span>
+
+                            <select asp-for="ResultadoCierre"
+                                    class="form-select">
+
+                                <option value="">
+                                    -- Seleccione un resultado --
+                                </option>
+
+                                <option value="Controlado">
+                                    Controlado
+                                </option>
+
+                                <option value="Sin novedad">
+                                    Sin novedad
+                                </option>
+
+                                <option value="Con pérdidas materiales">
+                                    Con pérdidas materiales
+                                </option>
+
+                                <option value="Con víctimas">
+                                    Con víctimas
+                                </option>
+
+                                <option value="Falsa alarma">
+                                    Falsa alarma
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <span asp-validation-for="ResultadoCierre"
+                              class="text-danger">
+                        </span>
+
+                        <div class="form-text">
+                            Seleccione el resultado final obtenido durante la atención.
+                        </div>
+
+                    </div>
+
+                    @* Observaciones *@
+                    <div class="col-12">
+
+                        <label asp-for="Observaciones"
+                               class="form-label fw-bold">
+
+                            Observaciones
+
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <textarea asp-for="Observaciones"
+                                  class="form-control"
+                                  rows="6"
+                                  maxlength="500"
+                                  placeholder="Describa detalladamente el resultado y las acciones realizadas durante la atención..."></textarea>
+
+                        <div class="d-flex justify-content-between">
+
+                            <span asp-validation-for="Observaciones"
+                                  class="text-danger">
+                            </span>
+
+                            <div class="form-text">
+                                Máximo 500 caracteres.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    @* Personal involucrado *@
+                    <div class="col-md-6">
+
+                        <label asp-for="PersonalInvolucrado"
+                               class="form-label fw-bold">
+
+                            Personal involucrado
+
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text bg-dark text-warning">
+
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     width="18"
+                                     height="18"
+                                     fill="currentColor"
+                                     viewBox="0 0 16 16"
+                                     aria-hidden="true">
+
+                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+
+                                </svg>
+
+                            </span>
+
+                            <input asp-for="PersonalInvolucrado"
+                                   type="number"
+                                   min="0"
+                                   max="1000"
+                                   class="form-control"
+                                   placeholder="Ingrese la cantidad" />
+
+                            <span class="input-group-text">
+                                personas
+                            </span>
+
+                        </div>
+
+                        <span asp-validation-for="PersonalInvolucrado"
+                              class="text-danger">
+                        </span>
+
+                        <div class="form-text">
+                            Ingrese la cantidad total de personal que participó.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            @* Pie de formulario con acciones *@
+            <div class="card-footer bg-light p-4">
+
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+
+                    <a asp-controller="AtencionCierre"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary fw-semibold px-4">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="16"
+                             height="16"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             class="me-1"
+                             aria-hidden="true">
+
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708Z" />
+
+                        </svg>
+
+                        Cancelar
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-danger fw-semibold px-4"
+                            onclick="return confirm('¿Está seguro de cerrar este incidente? Esta acción registrará el cierre definitivo.');">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="17"
+                             height="17"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             class="me-1"
+                             aria-hidden="true">
+
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0ZM6.97 11.03a.75.75 0 0 0 1.06 0l4-4a.75.75 0 0 0-1.06-1.06L7.5 9.44 5.53 7.47a.75.75 0 0 0-1.06 1.06l2.5 2.5Z" />
+
+                        </svg>
+
+                        Cerrar incidente
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div>
-            <strong>Dirección:</strong>
-            <p>@Model.Direccion</p>
-        </div>
-    </div>
+    </form>
+
 </div>
 
-<form asp-controller="AtencionCierre"
-      asp-action="Cerrar"
-      method="post">
-
-    <div asp-validation-summary="ModelOnly"
-         class="text-danger mb-3">
-    </div>
-
-    <input asp-for="IdIncidente" type="hidden" />
-
-    <div class="mb-3">
-        <label asp-for="ResultadoCierre"
-               class="form-label">
-        </label>
-
-        <select asp-for="ResultadoCierre"
-                class="form-select">
-            <option value="">-- Seleccione un resultado --</option>
-            <option value="Controlado">Controlado</option>
-            <option value="Sin novedad">Sin novedad</option>
-            <option value="Con pérdidas materiales">
-                Con pérdidas materiales
-            </option>
-            <option value="Con víctimas">Con víctimas</option>
-            <option value="Falsa alarma">Falsa alarma</option>
-        </select>
-
-        <span asp-validation-for="ResultadoCierre"
-              class="text-danger">
-        </span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Observaciones"
-               class="form-label">
-        </label>
-
-        <textarea asp-for="Observaciones"
-                  class="form-control"
-                  rows="5"
-                  maxlength="500"
-                  placeholder="Describa el resultado y las acciones realizadas"></textarea>
-
-        <span asp-validation-for="Observaciones"
-              class="text-danger">
-        </span>
-
-        <div class="form-text">
-            Máximo 500 caracteres.
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="PersonalInvolucrado"
-               class="form-label">
-        </label>
-
-        <input asp-for="PersonalInvolucrado"
-               type="number"
-               min="0"
-               max="1000"
-               class="form-control" />
-
-        <span asp-validation-for="PersonalInvolucrado"
-              class="text-danger">
-        </span>
-    </div>
-
-    <button type="submit"
-            class="btn btn-danger"
-            onclick="return confirm('¿Está seguro de cerrar este incidente?');">
-        Cerrar incidente
-    </button>
-
-    <a asp-controller="AtencionCierre"
-       asp-action="Index"
-       class="btn btn-secondary">
-        Cancelar
-    </a>
-</form>
-
-@section Scripts {
+@section Scripts
+{
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-

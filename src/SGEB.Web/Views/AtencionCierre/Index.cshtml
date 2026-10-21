@@ -10,181 +10,473 @@
     ViewData["Title"] = "Atención y cierre";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>Atención y cierre de incidentes</h1>
-        <p class="text-muted">
-            Registre la atención y el cierre de los incidentes.
-        </p>
+<div class="container-fluid py-4">
+
+    @* Encabezado principal *@
+    <div class="card bg-dark text-white border-0 shadow mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center gy-3">
+
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center">
+
+                        @* Ícono profesional de escudo *@
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 58px; height: 58px; min-width: 58px;">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="30"
+                                 height="30"
+                                 fill="currentColor"
+                                 viewBox="0 0 16 16"
+                                 aria-hidden="true">
+
+                                <path d="M5.072 0.56a1.5 1.5 0 0 1 1.356-.203l6 2A1.5 1.5 0 0 1 13.5 3.78v3.375c0 3.982-2.4 7.224-5.779 8.664a1.5 1.5 0 0 1-1.442 0C2.9 14.379.5 11.137.5 7.155V3.78a1.5 1.5 0 0 1 1.072-1.423l3.5-1.167V.56Zm2.271 1.218L2 3.559v3.596c0 3.22 1.904 5.89 5 7.208 3.096-1.318 5-3.988 5-7.208V3.559L7.343 2.006a.5.5 0 0 0-.343 0Z" />
+
+                                <path d="M7.5 4.5a.5.5 0 0 1 1 0v3h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-3Z" />
+                            </svg>
+
+                        </div>
+
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">
+                                Atención y cierre de incidentes
+                            </h1>
+
+                            <p class="text-white-50 mb-0">
+                                Gestione la atención y el cierre de los incidentes registrados.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-lg-end">
+                    <a asp-controller="Home"
+                       asp-action="Index"
+                       class="btn btn-warning fw-semibold px-4 py-2">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="16"
+                             height="16"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             class="me-1"
+                             aria-hidden="true">
+
+                            <path fill-rule="evenodd"
+                                  d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5Z" />
+                        </svg>
+
+                        Volver al inicio
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
 
-    <a asp-controller="Home"
-       asp-action="Index"
-       class="btn btn-outline-secondary">
-        Volver al inicio
-    </a>
+    @* Mensaje de operación exitosa *@
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <div class="d-flex align-items-center">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="22"
+                     height="22"
+                     fill="currentColor"
+                     viewBox="0 0 16 16"
+                     class="me-3"
+                     aria-hidden="true">
+
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L6.477 9.417 5.384 8.323a.75.75 0 0 0-1.06 1.06l1.625 1.625a.75.75 0 0 0 1.079-.018l5.02-4.94a.75.75 0 0 0-.018-1.08Z" />
+                </svg>
+
+                <div>
+                    <strong>Operación realizada correctamente</strong>
+                    <div>@TempData["Mensaje"]</div>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+
+        </div>
+    }
+
+    @* Mensaje de error *@
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <div class="d-flex align-items-center">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="22"
+                     height="22"
+                     fill="currentColor"
+                     viewBox="0 0 16 16"
+                     class="me-3"
+                     aria-hidden="true">
+
+                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.16.16 0 0 1-.054.06.12.12 0 0 1-.066.017H1.146a.12.12 0 0 1-.066-.017.16.16 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057ZM8.002 1a1.13 1.13 0 0 0-.967.562L.178 13.229C-.253 13.962.276 15 1.146 15h13.708c.87 0 1.4-1.038.968-1.771L8.965 1.562A1.13 1.13 0 0 0 8.002 1Z" />
+
+                    <path d="M7.001 5.016a.905.905 0 0 1 1.798 0l-.35 3.507a.552.552 0 0 1-1.1 0l-.348-3.507ZM8.002 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
+                </svg>
+
+                <div>
+                    <strong>No se pudo completar la operación</strong>
+                    <div>@TempData["Error"]</div>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+
+        </div>
+    }
+
+    @* Verificar si existen incidentes *@
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 70px; height: 70px;">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             width="34"
+                             height="34"
+                             fill="currentColor"
+                             viewBox="0 0 16 16"
+                             aria-hidden="true">
+
+                            <path d="M4.5 0A1.5 1.5 0 0 0 3 1.5V2h-.5A1.5 1.5 0 0 0 1 3.5v11A1.5 1.5 0 0 0 2.5 16h9a1.5 1.5 0 0 0 1.5-1.5V14h.5a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 13.5 0h-9ZM4 1.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H13V3.5A1.5 1.5 0 0 0 11.5 2H4v-.5ZM2.5 3h9a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5Z" />
+                        </svg>
+
+                    </div>
+                </div>
+
+                <h2 class="h4 fw-bold">
+                    No existen incidentes registrados
+                </h2>
+
+                <p class="text-muted mb-4">
+                    Actualmente no hay incidentes disponibles para gestionar.
+                </p>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-dark px-4">
+                    Volver al inicio
+                </a>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        @* Tarjeta de resumen *@
+        <div class="row mb-3">
+            <div class="col-md-6 col-lg-4">
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+
+                        <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center me-3"
+                             style="width: 54px; height: 54px; min-width: 54px;">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="25"
+                                 height="25"
+                                 fill="currentColor"
+                                 viewBox="0 0 16 16"
+                                 aria-hidden="true">
+
+                                <path d="M4.5 0A1.5 1.5 0 0 0 3 1.5V2h-.5A1.5 1.5 0 0 0 1 3.5v11A1.5 1.5 0 0 0 2.5 16h9a1.5 1.5 0 0 0 1.5-1.5V14h.5a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 13.5 0h-9ZM4 1.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H13V3.5A1.5 1.5 0 0 0 11.5 2H4v-.5ZM2.5 3h9a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5Z" />
+                            </svg>
+
+                        </div>
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Incidentes encontrados
+                            </p>
+
+                            <h2 class="h4 fw-bold mb-0">
+                                @Model.Count
+                            </h2>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @* Tabla principal *@
+        <div class="card border-0 shadow">
+
+            <div class="card-header bg-dark text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <h2 class="h5 fw-bold mb-1">
+                            Lista de incidentes
+                        </h2>
+
+                        <small class="text-white-50">
+                            Revise el estado y las acciones disponibles.
+                        </small>
+                    </div>
+
+                    <span class="badge bg-warning text-dark px-3 py-2">
+                        SGEB
+                    </span>
+
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+
+                    @* table-bordered crea las líneas tipo Excel *@
+                    <table class="table table-bordered table-striped table-hover align-middle mb-0">
+
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" class="text-center py-3">#</th>
+                                <th scope="col" class="py-3">Tipo</th>
+                                <th scope="col" class="py-3">Descripción</th>
+                                <th scope="col" class="py-3">Dirección</th>
+                                <th scope="col" class="py-3">Zona</th>
+                                <th scope="col" class="py-3">Reportante</th>
+                                <th scope="col" class="text-center py-3">Prioridad</th>
+                                <th scope="col" class="text-center py-3">Estado</th>
+                                <th scope="col" class="py-3">Fecha</th>
+                                <th scope="col" class="text-center py-3">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var incidente in Model)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold">
+                                        @incidente.IdIncidente
+                                    </td>
+
+                                    <td class="fw-semibold">
+                                        @incidente.TipoIncidente
+                                    </td>
+
+                                    <td>
+                                        @incidente.Descripcion
+                                    </td>
+
+                                    <td>
+                                        @incidente.Direccion
+                                    </td>
+
+                                    <td>
+                                        @incidente.Zona
+                                    </td>
+
+                                    <td>
+                                        @incidente.NombreReportante
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (incidente.Prioridad == "Alta")
+                                        {
+                                            <span class="badge rounded-pill bg-danger px-3 py-2">
+                                                Alta
+                                            </span>
+                                        }
+                                        else if (incidente.Prioridad == "Media")
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
+                                                Media
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-success px-3 py-2">
+                                                Baja
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (incidente.Estado == "Registrado")
+                                        {
+                                            <span class="badge rounded-pill bg-secondary px-3 py-2">
+                                                Registrado
+                                            </span>
+                                        }
+                                        else if (incidente.Estado == "Asignado")
+                                        {
+                                            <span class="badge rounded-pill bg-primary px-3 py-2">
+                                                Asignado
+                                            </span>
+                                        }
+                                        else if (incidente.Estado == "Atendido")
+                                        {
+                                            <span class="badge rounded-pill bg-info text-dark px-3 py-2">
+                                                Atendido
+                                            </span>
+                                        }
+                                        else if (incidente.Estado == "Cerrado")
+                                        {
+                                            <span class="badge rounded-pill bg-dark px-3 py-2">
+                                                Cerrado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-secondary px-3 py-2">
+                                                @incidente.Estado
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-nowrap">
+                                        <div class="fw-semibold">
+                                            @incidente.FechaHoraRegistro.ToString("dd/MM/yyyy")
+                                        </div>
+
+                                        <small class="text-muted">
+                                            @incidente.FechaHoraRegistro.ToString("HH:mm")
+                                        </small>
+                                    </td>
+
+                                    <td class="text-center text-nowrap">
+                                        @if (incidente.Estado == "Asignado")
+                                        {
+                                            <form asp-controller="AtencionCierre"
+                                                  asp-action="MarcarAtendido"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="idIncidente"
+                                                       value="@incidente.IdIncidente" />
+
+                                                <button type="submit"
+                                                        class="btn btn-success btn-sm fw-semibold"
+                                                        onclick="return confirm('¿Desea marcar este incidente como atendido?');">
+
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                         width="15"
+                                                         height="15"
+                                                         fill="currentColor"
+                                                         viewBox="0 0 16 16"
+                                                         class="me-1"
+                                                         aria-hidden="true">
+
+                                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L6.477 9.417 5.384 8.323a.75.75 0 0 0-1.06 1.06l1.625 1.625a.75.75 0 0 0 1.079-.018l5.02-4.94a.75.75 0 0 0-.018-1.08Z" />
+                                                    </svg>
+
+                                                    Marcar atendido
+                                                </button>
+
+                                            </form>
+                                        }
+                                        else if (incidente.Estado == "Atendido")
+                                        {
+                                            <a asp-controller="AtencionCierre"
+                                               asp-action="Cerrar"
+                                               asp-route-id="@incidente.IdIncidente"
+                                               class="btn btn-danger btn-sm fw-semibold">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     width="15"
+                                                     height="15"
+                                                     fill="currentColor"
+                                                     viewBox="0 0 16 16"
+                                                     class="me-1"
+                                                     aria-hidden="true">
+
+                                                    <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-8a.5.5 0 0 0-1 0v8a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5Z" />
+
+                                                    <path d="M15.854.146a.5.5 0 0 1 0 .708l-8 8A.5.5 0 0 1 7.5 9H5a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .146-.354l8-8a.5.5 0 0 1 .708 0l2.5 2.5Z" />
+                                                </svg>
+
+                                                Registrar cierre
+                                            </a>
+                                        }
+                                        else if (incidente.Estado == "Registrado")
+                                        {
+                                            <span class="badge bg-light text-secondary border px-3 py-2">
+                                                Pendiente de asignación
+                                            </span>
+                                        }
+                                        else if (incidente.Estado == "Cerrado")
+                                        {
+                                            <span class="badge bg-success px-3 py-2">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     width="14"
+                                                     height="14"
+                                                     fill="currentColor"
+                                                     viewBox="0 0 16 16"
+                                                     class="me-1"
+                                                     aria-hidden="true">
+
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-3.97-3.03a.75.75 0 0 0-1.08.022L6.477 9.417 5.384 8.323a.75.75 0 0 0-1.06 1.06l1.625 1.625a.75.75 0 0 0 1.079-.018l5.02-4.94a.75.75 0 0 0-.018-1.08Z" />
+                                                </svg>
+
+                                                Finalizado
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Sin acciones disponibles
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light text-muted py-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+                    <small>
+                        Se muestran
+                        <strong>@Model.Count</strong>
+                        incidente(s) registrado(s).
+                    </small>
+
+                    <small>
+                        Sistema de Gestión de Emergencias de Bomberos
+                    </small>
+
+                </div>
+            </div>
+
+        </div>
+    }
+
 </div>
-
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Mensaje"]
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Cerrar">
-        </button>
-    </div>
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Cerrar">
-        </button>
-    </div>
-}
-
-@if (Model == null || Model.Count == 0)
-{
-    <div class="alert alert-info">
-        No existen incidentes registrados.
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th>Dirección</th>
-                    <th>Zona</th>
-                    <th>Reportante</th>
-                    <th>Prioridad</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach (var incidente in Model)
-                {
-                    <tr>
-                        <td>@incidente.IdIncidente</td>
-                        <td>@incidente.TipoIncidente</td>
-                        <td>@incidente.Descripcion</td>
-                        <td>@incidente.Direccion</td>
-                        <td>@incidente.Zona</td>
-                        <td>@incidente.NombreReportante</td>
-
-                        <td>
-                            @if (incidente.Prioridad == "Alta")
-                            {
-                                <span class="badge bg-danger">Alta</span>
-                            }
-                            else if (incidente.Prioridad == "Media")
-                            {
-                                <span class="badge bg-warning text-dark">
-                                    Media
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">Baja</span>
-                            }
-                        </td>
-
-                        <td>
-                            @if (incidente.Estado == "Registrado")
-                            {
-                                <span class="badge bg-secondary">
-                                    Registrado
-                                </span>
-                            }
-                            else if (incidente.Estado == "Asignado")
-                            {
-                                <span class="badge bg-primary">
-                                    Asignado
-                                </span>
-                            }
-                            else if (incidente.Estado == "Atendido")
-                            {
-                                <span class="badge bg-info text-dark">
-                                    Atendido
-                                </span>
-                            }
-                            else if (incidente.Estado == "Cerrado")
-                            {
-                                <span class="badge bg-dark">
-                                    Cerrado
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">
-                                    @incidente.Estado
-                                </span>
-                            }
-                        </td>
-
-                        <td>
-                            @incidente.FechaHoraRegistro.ToString("dd/MM/yyyy HH:mm")
-                        </td>
-
-                        <td>
-                            @if (incidente.Estado == "Asignado")
-                            {
-                                <form asp-controller="AtencionCierre"
-                                      asp-action="MarcarAtendido"
-                                      method="post"
-                                      class="d-inline">
-
-                                    <input type="hidden"
-                                           name="idIncidente"
-                                           value="@incidente.IdIncidente" />
-
-                                    <button type="submit"
-                                            class="btn btn-success btn-sm"
-                                            onclick="return confirm('¿Desea marcar este incidente como atendido?');">
-                                        Marcar atendido
-                                    </button>
-                                </form>
-                            }
-                            else if (incidente.Estado == "Atendido")
-                            {
-                                <a asp-controller="AtencionCierre"
-                                   asp-action="Cerrar"
-                                   asp-route-id="@incidente.IdIncidente"
-                                   class="btn btn-danger btn-sm">
-                                    Registrar cierre
-                                </a>
-                            }
-                            else if (incidente.Estado == "Registrado")
-                            {
-                                <span class="text-muted">
-                                    Pendiente de asignación
-                                </span>
-                            }
-                            else if (incidente.Estado == "Cerrado")
-                            {
-                                <span class="text-success fw-semibold">
-                                    Finalizado
-                                </span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
