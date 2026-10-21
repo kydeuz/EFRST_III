@@ -1,53 +1,69 @@
-@model List<SGEB.Web.Models.EstadisticaTipoViewModel>
+@model List<SGEB.Web.Models.EstadisticaZonaViewModel>
 
 @{
-    ViewData["Title"] = "Reportes - Por tipo";
+    ViewData["Title"] = "Reportes - Por zona";
 }
 
-<h1>Reportes</h1>
+<div class="page-header">
+    <h1><i class="bi bi-bar-chart-line"></i> Reportes</h1>
+    <partial name="_BotonesExportar" model="@("zona")" />
+</div>
 
 <ul class="nav nav-tabs mb-3">
-    <li class="nav-item"><a class="nav-link active" asp-action="PorTipo">Por tipo</a></li>
-    <li class="nav-item"><a class="nav-link" asp-action="PorZona">Por zona</a></li>
+    <li class="nav-item">
+        <a class="nav-link" asp-action="PorTipo"><i class="bi bi-tags"></i> Por tipo</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" asp-action="PorZona"><i class="bi bi-geo-alt"></i> Por zona</a>
+    </li>
 </ul>
-
-<partial name="_BotonesExportar" model="@("tipo")" />
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Todavía no hay incidentes registrados.</div>
+    <div class="card">
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Todavía no hay incidentes registrados.
+        </div>
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Tipo</th><th>Total</th><th>Cerrados</th><th>Sin asignar</th>
-                <th>Min. promedio</th><th>% cierre</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var e in Model)
-            {
-                <tr>
-                    <td>@e.TipoIncidente</td>
-                    <td>@e.TotalIncidentes</td>
-                    <td>@e.Cerrados</td>
-                    <td>@e.SinAsignar</td>
-                    <td>@(e.MinutosPromedioAtencion?.ToString() ?? "-")</td>
-                    <td>@e.PorcentajeCierre.ToString("0.0")%</td>
-                </tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr class="fw-bold">
-                <td>TOTAL</td>
-                <td>@Model.Sum(x => x.TotalIncidentes)</td>
-                <td>@Model.Sum(x => x.Cerrados)</td>
-                <td>@Model.Sum(x => x.SinAsignar)</td>
-                <td>-</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Zona</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Cerrados</th>
+                        <th class="text-center">% cierre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@e.Zona</td>
+                            <td class="text-end">@e.TotalIncidentes</td>
+                            <td class="text-end">@e.Cerrados</td>
+                            <td class="text-center">
+                                <span class="badge sgeb-badge @(e.PorcentajeCierre >= 80 ? "sgeb-verde" : e.PorcentajeCierre >= 50 ? "sgeb-ambar" : "sgeb-rojo")">
+                                    @e.PorcentajeCierre.ToString("0.0")%
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td>TOTAL</td>
+                        <td class="text-end">@Model.Sum(x => x.TotalIncidentes)</td>
+                        <td class="text-end">@Model.Sum(x => x.Cerrados)</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 }

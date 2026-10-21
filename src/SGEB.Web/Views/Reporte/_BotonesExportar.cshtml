@@ -1,8 +1,14 @@
 @model string
 
-<div class="mb-3">
-    <span class="me-2">Descargar:</span>
-    <a class="btn btn-sm btn-danger" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="pdf">PDF</a>
-    <a class="btn btn-sm btn-success" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="excel">Excel</a>
-    <a class="btn btn-sm btn-secondary" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="csv">CSV</a>
+<div class="d-flex flex-wrap align-items-center gap-2">
+    <span class="text-muted small"><i class="bi bi-download"></i> Descargar:</span>
+    <a class="btn btn-sm btn-outline-danger" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="pdf">
+        <i class="bi bi-file-earmark-pdf"></i> PDF
+    </a>
+    <a class="btn btn-sm btn-outline-success" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="excel">
+        <i class="bi bi-file-earmark-excel"></i> Excel
+    </a>
+    <a class="btn btn-sm btn-outline-secondary" asp-action="Exportar" asp-route-reporte="@Model" asp-route-formato="csv">
+        <i class="bi bi-filetype-csv"></i> CSV
+    </a>
 </div>

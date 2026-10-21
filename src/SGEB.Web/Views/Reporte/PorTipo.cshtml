@@ -1,19 +1,75 @@
 @model List<SGEB.Web.Models.EstadisticaTipoViewModel>
 
-<canvas id="graficoTipo" height="90"></canvas>
+@{
+    ViewData["Title"] = "Reportes - Por tipo";
+}
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script>
-        new Chart(document.getElementById('graficoTipo'), {
-            type: 'bar',
-            data: {
-                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.TipoIncidente))),
-                datasets: [
-                    { label: 'Total', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.TotalIncidentes))) },
-                    { label: 'Cerrados', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => m.Cerrados))) }
-                ]
-            }
-        });
-    </script>
+<div class="page-header">
+    <h1><i class="bi bi-bar-chart-line"></i> Reportes</h1>
+    <partial name="_BotonesExportar" model="@("tipo")" />
+</div>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link active" asp-action="PorTipo"><i class="bi bi-tags"></i> Por tipo</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-action="PorZona"><i class="bi bi-geo-alt"></i> Por zona</a>
+    </li>
+</ul>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Todavía no hay incidentes registrados.
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Cerrados</th>
+                        <th class="text-end">Sin asignar</th>
+                        <th class="text-end">Min. promedio</th>
+                        <th class="text-center">% cierre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@e.TipoIncidente</td>
+                            <td class="text-end">@e.TotalIncidentes</td>
+                            <td class="text-end">@e.Cerrados</td>
+                            <td class="text-end @(e.SinAsignar > 0 ? "text-danger fw-semibold" : "")">@e.SinAsignar</td>
+                            <td class="text-end @(e.MinutosPromedioAtencion == null ? "text-muted" : "")">@(e.MinutosPromedioAtencion?.ToString() ?? "-")</td>
+                            <td class="text-center">
+                                <span class="badge sgeb-badge @(e.PorcentajeCierre >= 80 ? "sgeb-verde" : e.PorcentajeCierre >= 50 ? "sgeb-ambar" : "sgeb-rojo")">
+                                    @e.PorcentajeCierre.ToString("0.0")%
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr class="fw-bold">
+                        <td>TOTAL</td>
+                        <td class="text-end">@Model.Sum(x => x.TotalIncidentes)</td>
+                        <td class="text-end">@Model.Sum(x => x.Cerrados)</td>
+                        <td class="text-end">@Model.Sum(x => x.SinAsignar)</td>
+                        <td class="text-end">-</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 }
