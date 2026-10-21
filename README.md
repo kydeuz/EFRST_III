@@ -464,7 +464,81 @@ El estado `Atendido` existía en el modelo pero ningún flujo lo usaba. Se desca
 - Si se libera por el catálogo la única unidad de un incidente, este queda en `Asignado` sin unidades activas. No rompe nada (`MarcarAtendido` lo detecta con 50014), pero no se revierte el estado del incidente de forma automática.
 - `sp_AtencionCierre_Registrar` no libera las unidades al cerrar: quedan `En servicio`. Falta confirmar con quien tiene la parte 3 si es intencional.
 
+## Cambios César v2
 
+Personalización visual con temática bombero. Solo se tocó el aspecto: no se modificó ninguna lógica, controller, stored procedure ni validación.
+
+### Avance
+
+| Componente | Estado |
+|---|---|
+| Layout general (navbar, footer, alertas) | ✅ Terminado |
+| Hoja de estilos con paleta bombero (`site.css`) | ✅ Terminado |
+| Partials compartidos de badges | ✅ Terminado |
+| Home | ✅ Terminado |
+| Incidente/Index e Incidente/Registrar | ✅ Terminado |
+| Ajustes a la vista de Cierre (Giancarlo) | ✅ Terminado |
+
+### Archivos nuevos y modificados
+
+| Archivo | Cambio |
+|---|---|
+| `Views/Shared/_Layout.cshtml` | Modificado |
+| `Views/Shared/_Alertas.cshtml` | Nuevo |
+| `Views/Shared/_BadgeEstado.cshtml` | Nuevo |
+| `Views/Shared/_BadgePrioridad.cshtml` | Nuevo |
+| `wwwroot/css/site.css` | Modificado (reemplazado) |
+| `Views/Home/Index.cshtml` | Modificado |
+| `Views/Incidente/Index.cshtml` | Modificado |
+| `Views/Incidente/Registrar.cshtml` | Modificado |
+| `Views/AtencionCierre/Cerrar.cshtml` | Modificado (ajustes menores) |
+
+### Layout y estilos
+
+- **Navbar oscura** con marca SGEB, menú con íconos (Inicio, Incidentes, Unidades, Reportes), resalte de la sección activa y el número de emergencias 116.
+- **Footer** con el nombre del sistema y el equipo, siempre pegado al fondo de la página.
+- **Favicon** de camión de bomberos y título de pestaña `Página - SGEB`.
+- **Alertas centralizadas:** `_Alertas.cshtml` muestra `TempData["Mensaje"]` (verde) y `TempData["Error"]` (rojo) desde el layout. Las vistas ya no necesitan su propio bloque.
+- **Íconos:** Bootstrap Icons 1.11.3 cargado por CDN (requiere internet).
+- **Paleta en `site.css`:**
+
+| Color | Uso | Valor |
+|---|---|---|
+| Rojo bombero | Botones primarios, bordes, acentos | `#C8102E` |
+| Carbón | Navbar, footer, encabezados de tabla | `#1F2328` |
+| Ámbar | Prioridad media, detalles de la navbar | `#F5A300` |
+
+- Clases reutilizables: `.page-header` (cabecera de pantalla), `.card-modulo` (tarjetas del Home), `.fila-alta` (borde rojo en incidentes de prioridad Alta) y `.sgeb-badge` con sus variantes de color.
+
+### Badges compartidos
+
+- `_BadgePrioridad`: Alta = rojo, Media = ámbar, Baja = verde.
+- `_BadgeEstado`: un solo partial para todos los estados del sistema.
+  - Incidente: Registrado, Asignado, Atendido, Cerrado.
+  - Unidad: Disponible, En servicio, Mantenimiento, Fuera de servicio.
+  - Asignación: Asignada, En camino, En sitio, Liberada.
+
+Uso: `<partial name="_BadgeEstado" model="item.Estado" />`
+
+### Vistas
+
+- **Home:** tarjetas con ícono y efecto al pasar el mouse. Se limpiaron comentarios sobrantes.
+- **Incidente/Index:** tabla dentro de una card, badges de prioridad y estado, borde rojo en incidentes de prioridad Alta, mensaje cuando no hay incidentes, botón "Unidades" en cada fila y botón "Cerrar" visible solo cuando el incidente está en estado Atendido (el controller de cierre solo acepta ese estado).
+- **Incidente/Registrar:** formulario separado en dos tarjetas (incidente y reportante), con distribución responsive y botones Cancelar y Volver. Las validaciones y los campos no cambiaron.
+
+### Ajustes a la vista de Cierre (parte de Giancarlo)
+
+En `Views/AtencionCierre/Cerrar.cshtml`:
+
+- Se eliminó `@Html.AntiForgeryToken()`, porque el formulario con `asp-action` ya genera el token y quedaba duplicado.
+- El estado del incidente ahora usa el partial `_BadgeEstado`, para verse igual que en el resto del sistema.
+- El contenedor `container-fluid` se cambió por un `div` simple, porque el layout ya incluye su propio `container`.
+
+### Cómo probar
+
+1. `dotnet run --project src/SGEB.Web` y abrir el Home: deben verse las 4 tarjetas con ícono y la navbar oscura.
+2. Registrar un incidente y comprobar que aparece en la tabla con sus badges.
+3. Verificar que un incidente en estado Atendido muestra el botón "Cerrar".
 
 ## Instrucciones para el equipo
 
